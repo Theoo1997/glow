@@ -19,7 +19,7 @@ The Common Microcontroller Software Interface Standard [CMSIS](https://github.co
 # Project Overview
 This branch master of Github contains Glow with CMSIS-NN support. CMSIS-NN software library is part of CMSIS and contains efficient neural network kernels developed to maximize the performance and minimize the memory footprint of neural networks on Cortex-M processor cores. This project is under develop and new CMSIS-NN kernels will be added. Currently we only support Int8 Fully Conected layers. 
 
-## Partners
+## Partners of Glow
 
 Contributions to Glow are welcomed and encouraged! Glow is developed in
 collaboration with the following partners:
