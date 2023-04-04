@@ -85,6 +85,15 @@ struct QuantizationTransform32To8 {
   }
 };
 
+struct CMSIS_QuantizationTransform32To8 {
+  int cmsis_scale;
+  int cmsis_offset;
+
+  /// Initializes the transformation based on the conversion formula (above).
+  CMSIS_QuantizationTransform32To8(int cmsis_scale, int cmsis_offset)
+      : cmsis_scale(cmsis_scale), cmsis_offset(cmsis_offset) {}
+};
+
 /// Tensor profiling parameters for a given node.
 struct NodeProfilingInfo {
   std::string nodeOutputName_;
@@ -424,6 +433,12 @@ Tensor tensor4BitsFusedRowwiseDequantization(const Tensor &input);
 /// This scales a 32-bit signed integer word into an 8-bit signed integer.
 /// \returns transformation parameters.
 QuantizationTransform32To8 quantizeScaleOffset32To8(float scale,
+                                                    int32_t offset);
+
+/// Convert the floating point quantization parameters \p scale and \p offset
+/// into the integer sequence : More info here: https://github.com/sourcecode369/tensorflow-1/blob/master/tensorflow/lite/kernels/internal/quantization_util.cc
+/// TFLM already so it was taken from there. 
+CMSIS_QuantizationTransform32To8 CMSIS_quantizeScaleOffset32To8(float scale,
                                                     int32_t offset);
 
 /// Function to get the quantized range for a given precision type \p qTy.
