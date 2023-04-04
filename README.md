@@ -17,7 +17,7 @@ issues section and in the
 The Common Microcontroller Software Interface Standard [CMSIS](https://github.com/ARM-software/CMSIS_5) is a vendor-independent abstraction layer for microcontrollers that are based on Arm Cortex processors. CMSIS defines generic tool interfaces and enables consistent device support. The CMSIS software interfaces simplify software reuse, reduce the learning curve for microcontroller developers, and improve time to market for new devices.
 
 # Project Overview
-This branch master of Github contains Glow with CMSIS-NN support. CMSIS-NN software library is part of CMSIS and contains efficient neural network kernels developed to maximize the performance and minimize the memory footprint of neural networks on Cortex-M processor cores. This project is under develop and new CMSIS-NN kernels will be added. Currently we only support Int8 Fully Conected layers. 
+This branch master of Github contains Glow with CMSIS-NN support. CMSIS-NN software library is part of CMSIS and contains efficient neural network kernels developed to maximize the performance and minimize the memory footprint of neural networks on Cortex-M processor cores. This project is under develop and new CMSIS-NN kernels will be added. Currently we only support **Int8** Fully Conected and Convolutional layers. 
 
 ## Partners of Glow
 
