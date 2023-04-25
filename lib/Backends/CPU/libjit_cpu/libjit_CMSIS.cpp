@@ -84,7 +84,7 @@ void libjit_depthwise_conv2_3d_i8_i32_cmsis_wrapper(
     // TODOO: Add support for clip and lRELU, and make sure this is correct!! 
     if (actType == 0) {
     // No activation.
-    activation = {-128,128};
+    activation = {-128,127};
     }
     else { // (actType == 1)  } 
     // Relu.
@@ -134,7 +134,7 @@ void libjit_channelwise_conv2_3d_i8_i32_cmsis_wrapper(
     // TODOO: Add support for clip and lRELU, and make sure this is correct!! 
     if (actType == 0) {
     // No activation.
-    activation = {-128,128};
+    activation = {-128,127};
     }
     else { // (actType == 1)  } 
     // Relu.

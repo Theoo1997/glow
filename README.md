@@ -85,7 +85,6 @@ To get them, from the glow directory, run:
 
 Glow depends on `fmt`, which must be built from source:
 ```bash
-git clone https://github.com/fmtlib/fmt
 mkdir fmt/build
 cd fmt/build
 cmake ..

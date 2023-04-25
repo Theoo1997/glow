@@ -59,25 +59,31 @@ arm_cmsis_nn_status arm_convolve_wrapper_s8(const cmsis_nn_context *ctx,
                                             const cmsis_nn_dims *output_dims,
                                             int8_t *output_data)
 {
-    /*printf("conv_params->input_offset == %d\n",conv_params->input_offset);
+    /*printf("filter_data[0] == %d\n",filter_data[0]);
+    printf("filter_data[26] == %d\n",filter_data[26]);
+
+    printf("quant_params_multiplier[0] == %d\n",quant_params->multiplier[0]);
+    printf("quant_params_shift[0] == %d\n",quant_params->shift[0]);
+
+    printf("quant_params_multiplier[2] == %d\n",quant_params->multiplier[2]);
+    printf("quant_params_shift[2] == %d\n",quant_params->shift[2]);
+    
+    printf("conv_params->input_offset == %d\n",conv_params->input_offset);
     printf("conv_params->output_offset == %d\n", conv_params->output_offset);
-
     printf("filter_dims->n == %d\n",filter_dims->n);
-    printf("filter_dims->w %d\n",filter_dims->w);
-    printf("filter_dims->h %d\n",filter_dims->h);
-    printf("filter_dims->c %d\n",filter_dims->c);
-
     printf(" output_dims->c == %d\n",output_dims->c);
     printf("conv_params->activation.min %d\n",conv_params->activation.min);
     printf("conv_params->activation.max %d\n",conv_params->activation.max);
 
-    
     printf("input_dims->w %d\n",input_dims->w);
     printf("input_dims->h %d\n",input_dims->h);
     printf("input_dims->c %d\n",input_dims->c);
+    printf("filter_dims->w %d\n",filter_dims->w);
+    printf("filter_dims->h %d\n",filter_dims->h);
     printf("output_dims->w %d\n",output_dims->w);
     printf("output_dims->h %d\n",output_dims->h);
     printf("output_dims->c %d\n",output_dims->c);*/
+    //printf("\n\n");
 
     if ((conv_params->padding.w == 0) && (conv_params->padding.h == 0) && (filter_dims->w == 1) &&
         (filter_dims->h == 1) && (conv_params->dilation.w == 1 && conv_params->dilation.h == 1))
@@ -127,7 +133,7 @@ arm_cmsis_nn_status arm_convolve_wrapper_s8(const cmsis_nn_context *ctx,
     }
     else
     {
-        return arm_convolve_s8(ctx,
+         arm_cmsis_nn_status status = arm_convolve_s8(ctx,
                                conv_params,
                                quant_params,
                                input_dims,
@@ -138,6 +144,10 @@ arm_cmsis_nn_status arm_convolve_wrapper_s8(const cmsis_nn_context *ctx,
                                bias_data,
                                output_dims,
                                output_data);
+        //printf("output_data[0] %d\n",output_data[0]);
+        //printf("output_data[2] %d\n",output_data[2]);
+        //printf("output_data[10] %d\n",output_data[10]);
+        return status;
     }
 }
 
