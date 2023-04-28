@@ -1,9 +1,10 @@
+# Glow with CMSIS-NN Support
 ![Glow Logo](./docs/logo.svg)
 
 [![pytorch](https://circleci.com/gh/pytorch/glow.svg?style=shield)](https://circleci.com/gh/pytorch/glow)
 
 
-Glow is a machine learning compiler and execution engine for hardware
+[Glow](https://github.com/pytorch/glow) is a machine learning compiler and execution engine for hardware
 accelerators.  It is designed to be used as a backend for high-level machine
 learning frameworks.  The compiler is designed to allow state of the art
 compiler optimizations and code generation of neural network graphs. This
@@ -11,7 +12,14 @@ library is in active development. The project plan is described in the Github
 issues section and in the
 [Roadmap](https://github.com/pytorch/glow/wiki/Glow-Roadmap) wiki page.
 
-## Partners
+![CMSIS Logo](./docs/Arm_CMSIS_logo.png)
+
+The Common Microcontroller Software Interface Standard [CMSIS](https://github.com/ARM-software/CMSIS_5) is a vendor-independent abstraction layer for microcontrollers that are based on Arm Cortex processors. CMSIS defines generic tool interfaces and enables consistent device support. The CMSIS software interfaces simplify software reuse, reduce the learning curve for microcontroller developers, and improve time to market for new devices.
+
+# Project Overview
+This branch master of Github contains Glow with CMSIS-NN support. CMSIS-NN software library is part of CMSIS and contains efficient neural network kernels developed to maximize the performance and minimize the memory footprint of neural networks on Cortex-M processor cores. This project is under develop and new CMSIS-NN kernels will be added. Currently we only support **Int8** Fully Conected and Convolutional layers. 
+
+## Partners of Glow
 
 Contributions to Glow are welcomed and encouraged! Glow is developed in
 collaboration with the following partners:
@@ -58,7 +66,7 @@ libpng.
 #### Get Glow!
 
   ```bash
-  git clone git@github.com:pytorch/glow.git  # or: git clone https://github.com/pytorch/glow.git
+  git clone https://github.com/Theoo1997/glow
   cd glow
   ```
 
@@ -77,7 +85,6 @@ To get them, from the glow directory, run:
 
 Glow depends on `fmt`, which must be built from source:
 ```bash
-git clone https://github.com/fmtlib/fmt
 mkdir fmt/build
 cd fmt/build
 cmake ..

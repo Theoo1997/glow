@@ -1,0 +1,287 @@
+---
+GlowToolsVersion: '2023-04-04 (8c54da628) ()'
+...
+---
+GraphPreLowerHash: 0x0502A0A1356A2031
+...
+---
+- NodeOutputName:  'SOFTMAX:0'
+  Min:             0.0000000000000000033879746247008162810150644350670745552633889019489288330078125
+  Max:             1.0
+  Histogram:       [ 1734, 28, 20, 13, 13, 11, 10, 12, 13, 146 ]
+- NodeOutputName:  'input_1:0'
+  Min:             0.0
+  Max:             255.0
+  Histogram:       [ 35853, 52014, 71539, 82545, 86554, 74388, 68132, 56430, 
+                     45112, 41833 ]
+- NodeOutputName:  'model_activation_1_Relu_model_batch_normalization_1_FusedBatchNormV3_model_conv2d_1_BiasAdd_ReadVariableOp_resource_model_conv2d_1_BiasAdd_model_conv2d_2_Conv2D_model_conv2d_1_Conv2D1:0'
+  Min:             -16.4222660064697265625
+  Max:             15.1876888275146484375
+  Histogram:       [ 13, 127, 2146, 38233, 882051, 2.15612e+06, 193301, 
+                     4661, 140, 3 ]
+- NodeOutputName:  'model_activation_1_Relu_model_batch_normalization_1_FusedBatchNormV3_model_conv2d_1_BiasAdd_ReadVariableOp_resource_model_conv2d_1_BiasAdd_model_conv2d_2_Conv2D_model_conv2d_1_Conv2D1_RELU:0'
+  Min:             0.0
+  Max:             15.1876888275146484375
+  Histogram:       [ 2.8966e+06, 318994, 51243, 7938, 1565, 363, 77, 14, 
+                     1, 1 ]
+- NodeOutputName:  'model_activation_1_Relu_model_batch_normalization_1_FusedBatchNormV3_model_conv2d_1_BiasAdd_ReadVariableOp_resource_model_conv2d_1_BiasAdd_model_conv2d_2_Conv2D_model_conv2d_1_Conv2D1_RELU_max:0'
+  Min:             0.0
+  Max:             15.1876888275146484375
+  Histogram:       [ 2.8966e+06, 318994, 51243, 7938, 1565, 363, 77, 14, 
+                     1, 1 ]
+- NodeOutputName:  'model_activation_1_Relu_model_batch_normalization_1_FusedBatchNormV3_model_conv2d_1_BiasAdd_ReadVariableOp_resource_model_conv2d_1_BiasAdd_model_conv2d_2_Conv2D_model_conv2d_1_Conv2D:0'
+  Min:             -4.55675601959228515625
+  Max:             3.7215425968170166015625
+  Histogram:       [ 200, 0, 0, 0, 600, 600, 800, 400, 200, 400 ]
+- NodeOutputName:  'model_activation_2_Relu_model_add_add:0'
+  Min:             -11.8036746978759765625
+  Max:             12.0522899627685546875
+  Histogram:       [ 103, 1234, 13627, 139563, 1.1656e+06, 1.68588e+06, 
+                     246284, 23102, 1340, 63 ]
+- NodeOutputName:  'model_activation_2_Relu_model_add_add_RELU:0'
+  Min:             0.0
+  Max:             12.0522899627685546875
+  Histogram:       [ 2.51674e+06, 602838, 122744, 26052, 6536, 1474, 312, 
+                     74, 27, 5 ]
+- NodeOutputName:  'model_activation_2_Relu_model_add_add_RELU_max:0'
+  Min:             0.0
+  Max:             12.0522899627685546875
+  Histogram:       [ 2.51674e+06, 602838, 122744, 26052, 6536, 1474, 312, 
+                     74, 27, 5 ]
+- NodeOutputName:  'model_activation_3_Relu_model_batch_normalization_3_FusedBatchNormV3_model_conv2d_3_BiasAdd_ReadVariableOp_resource_model_conv2d_3_BiasAdd_model_conv2d_5_Conv2D_model_conv2d_3_Conv2D1:0'
+  Min:             -11.24935245513916015625
+  Max:             8.9296741485595703125
+  Histogram:       [ 46, 550, 5119, 43446, 286411, 877697, 371794, 49610, 
+                     3576, 151 ]
+- NodeOutputName:  'model_activation_3_Relu_model_batch_normalization_3_FusedBatchNormV3_model_conv2d_3_BiasAdd_ReadVariableOp_resource_model_conv2d_3_BiasAdd_model_conv2d_5_Conv2D_model_conv2d_3_Conv2D1_RELU:0'
+  Min:             0.0
+  Max:             8.9296741485595703125
+  Histogram:       [ 1.30529e+06, 236532, 70697, 18787, 5136, 1403, 397, 
+                     124, 28, 9 ]
+- NodeOutputName:  'model_activation_3_Relu_model_batch_normalization_3_FusedBatchNormV3_model_conv2d_3_BiasAdd_ReadVariableOp_resource_model_conv2d_3_BiasAdd_model_conv2d_5_Conv2D_model_conv2d_3_Conv2D1_RELU_max:0'
+  Min:             0.0
+  Max:             8.9296741485595703125
+  Histogram:       [ 1.30529e+06, 236532, 70697, 18787, 5136, 1403, 397, 
+                     124, 28, 9 ]
+- NodeOutputName:  'model_activation_3_Relu_model_batch_normalization_3_FusedBatchNormV3_model_conv2d_3_BiasAdd_ReadVariableOp_resource_model_conv2d_3_BiasAdd_model_conv2d_5_Conv2D_model_conv2d_3_Conv2D:0'
+  Min:             -1.63055789470672607421875
+  Max:             2.81334209442138671875
+  Histogram:       [ 400, 200, 800, 800, 1200, 1000, 600, 800, 400, 200 ]
+- NodeOutputName:  'model_activation_4_Relu_model_add_1_add:0'
+  Min:             -15.0888767242431640625
+  Max:             12.5178279876708984375
+  Histogram:       [ 48, 741, 8111, 68214, 352498, 757247, 389412, 56855, 
+                     5084, 190 ]
+- NodeOutputName:  'model_activation_4_Relu_model_add_1_add_RELU:0'
+  Min:             0.0
+  Max:             12.5178279876708984375
+  Histogram:       [ 1.17267e+06, 270102, 124402, 46626, 16825, 5857, 1526, 
+                     322, 60, 7 ]
+- NodeOutputName:  'model_activation_4_Relu_model_add_1_add_RELU_max:0'
+  Min:             0.0
+  Max:             12.5178279876708984375
+  Histogram:       [ 1.17267e+06, 270102, 124402, 46626, 16825, 5857, 1526, 
+                     322, 60, 7 ]
+- NodeOutputName:  'model_activation_5_Relu_model_batch_normalization_5_FusedBatchNormV3_model_conv2d_6_BiasAdd_ReadVariableOp_resource_model_conv2d_6_BiasAdd_model_conv2d_8_Conv2D_model_conv2d_6_Conv2D1:0'
+  Min:             -9.68158721923828125
+  Max:             6.60169219970703125
+  Histogram:       [ 7, 134, 2456, 29160, 174282, 365492, 206972, 37967, 
+                     2659, 71 ]
+- NodeOutputName:  'model_activation_5_Relu_model_batch_normalization_5_FusedBatchNormV3_model_conv2d_6_BiasAdd_ReadVariableOp_resource_model_conv2d_6_BiasAdd_model_conv2d_8_Conv2D_model_conv2d_6_Conv2D1_RELU:0'
+  Min:             0.0
+  Max:             6.60169219970703125
+  Histogram:       [ 730937, 61645, 19801, 5144, 1256, 316, 76, 21, 3, 
+                     1 ]
+- NodeOutputName:  'model_activation_5_Relu_model_batch_normalization_5_FusedBatchNormV3_model_conv2d_6_BiasAdd_ReadVariableOp_resource_model_conv2d_6_BiasAdd_model_conv2d_8_Conv2D_model_conv2d_6_Conv2D1_RELU_max:0'
+  Min:             0.0
+  Max:             6.60169219970703125
+  Histogram:       [ 730937, 61645, 19801, 5144, 1256, 316, 76, 21, 3, 
+                     1 ]
+- NodeOutputName:  'model_activation_5_Relu_model_batch_normalization_5_FusedBatchNormV3_model_conv2d_6_BiasAdd_ReadVariableOp_resource_model_conv2d_6_BiasAdd_model_conv2d_8_Conv2D_model_conv2d_6_Conv2D:0'
+  Min:             -2.7169716358184814453125
+  Max:             2.048688411712646484375
+  Histogram:       [ 200, 400, 1000, 1000, 1800, 1800, 2600, 1600, 1600, 
+                     800 ]
+- NodeOutputName:  'model_activation_6_Relu_model_add_2_add:0'
+  Min:             -37.13930511474609375
+  Max:             26.6815700531005859375
+  Histogram:       [ 5, 63, 1002, 20602, 168046, 407617, 196347, 24012, 
+                     1450, 56 ]
+- NodeOutputName:  'model_activation_6_Relu_model_add_2_add_RELU:0'
+  Min:             0.0
+  Max:             26.6815700531005859375
+  Histogram:       [ 711710, 69552, 26310, 8436, 2344, 635, 163, 40, 8, 
+                     2 ]
+- NodeOutputName:  'model_activation_6_Relu_model_add_2_add_RELU_max:0'
+  Min:             0.0
+  Max:             26.6815700531005859375
+  Histogram:       [ 711710, 69552, 26310, 8436, 2344, 635, 163, 40, 8, 
+                     2 ]
+- NodeOutputName:  'model_activation_Relu_model_batch_normalization_FusedBatchNormV3_model_conv2d_BiasAdd_ReadVariableOp_resource_model_conv2d_BiasAdd_model_conv2d_2_Conv2D_model_conv2d_Conv2D1:0'
+  Min:             -6.0725116729736328125
+  Max:             7.48766803741455078125
+  Histogram:       [ 879, 9154, 70256, 537935, 1.639e+06, 859016, 144653, 
+                     14662, 1195, 54 ]
+- NodeOutputName:  'model_activation_Relu_model_batch_normalization_FusedBatchNormV3_model_conv2d_BiasAdd_ReadVariableOp_resource_model_conv2d_BiasAdd_model_conv2d_2_Conv2D_model_conv2d_Conv2D1_RELU:0'
+  Min:             0.0
+  Max:             7.48766803741455078125
+  Histogram:       [ 2.51136e+06, 560507, 153416, 37644, 9628, 3409, 704, 
+                     108, 19, 3 ]
+- NodeOutputName:  'model_activation_Relu_model_batch_normalization_FusedBatchNormV3_model_conv2d_BiasAdd_ReadVariableOp_resource_model_conv2d_BiasAdd_model_conv2d_2_Conv2D_model_conv2d_Conv2D1_RELU_max:0'
+  Min:             0.0
+  Max:             7.48766803741455078125
+  Histogram:       [ 2.51136e+06, 560507, 153416, 37644, 9628, 3409, 704, 
+                     108, 19, 3 ]
+- NodeOutputName:  'model_activation_Relu_model_batch_normalization_FusedBatchNormV3_model_conv2d_BiasAdd_ReadVariableOp_resource_model_conv2d_BiasAdd_model_conv2d_2_Conv2D_model_conv2d_Conv2D:0'
+  Min:             -0.939889132976531982421875
+  Max:             1.44525253772735595703125
+  Histogram:       [ 200, 0, 0, 200, 600, 600, 1200, 200, 0, 200 ]
+- NodeOutputName:  'model_average_pooling2d_AvgPool:0'
+  Min:             0.0
+  Max:             4.941341876983642578125
+  Histogram:       [ 4027, 4302, 2525, 1224, 481, 170, 51, 15, 3, 2 ]
+- NodeOutputName:  'model_batch_normalization_2_FusedBatchNormV3_model_conv2d_2_BiasAdd_ReadVariableOp_resource_model_conv2d_2_BiasAdd:0'
+  Min:             -1.2809078693389892578125
+  Max:             1.15381538867950439453125
+  Histogram:       [ 400, 200, 0, 200, 600, 800, 200, 200, 200, 400 ]
+- NodeOutputName:  'model_batch_normalization_2_FusedBatchNormV3_model_conv2d_2_BiasAdd_ReadVariableOp_resource_model_conv2d_2_BiasAdd_model_conv2d_2_Conv2D:0'
+  Min:             -11.8036746978759765625
+  Max:             12.0522899627685546875
+  Histogram:       [ 109, 1341, 14696, 152126, 1.57512e+06, 1.43579e+06, 
+                     93976, 3422, 205, 14 ]
+- NodeOutputName:  'model_batch_normalization_4_FusedBatchNormV3_model_conv2d_4_BiasAdd_ReadVariableOp_resource_model_conv2d_4_BiasAdd:0'
+  Min:             -2.4134695529937744140625
+  Max:             3.670252323150634765625
+  Histogram:       [ 400, 200, 800, 1000, 600, 1000, 1200, 200, 200, 800 ]
+- NodeOutputName:  'model_batch_normalization_4_FusedBatchNormV3_model_conv2d_4_BiasAdd_ReadVariableOp_resource_model_conv2d_4_BiasAdd_model_conv2d_5_Conv2D_model_conv2d_4_Conv2D:0'
+  Min:             -13.427715301513671875
+  Max:             11.3760128021240234375
+  Histogram:       [ 106, 1132, 10415, 80508, 416306, 780123, 303954, 42105, 
+                     3601, 150 ]
+- NodeOutputName:  'model_batch_normalization_6_FusedBatchNormV3_model_conv2d_7_BiasAdd_ReadVariableOp_resource_model_conv2d_7_BiasAdd:0'
+  Min:             -1.24784934520721435546875
+  Max:             5.541842937469482421875
+  Histogram:       [ 2200, 1400, 2000, 1800, 1400, 2000, 1000, 600, 200, 
+                     200 ]
+- NodeOutputName:  'model_batch_normalization_6_FusedBatchNormV3_model_conv2d_7_BiasAdd_ReadVariableOp_resource_model_conv2d_7_BiasAdd_model_conv2d_8_Conv2D_model_conv2d_7_Conv2D:0'
+  Min:             -31.628185272216796875
+  Max:             28.761562347412109375
+  Histogram:       [ 10, 137, 3244, 50393, 265935, 384623, 106493, 7978, 
+                     375, 12 ]
+- NodeOutputName:  'model_conv2d_1_Conv2D:0'
+  Min:             -0.984311878681182861328125
+  Max:             0.843506038188934326171875
+  Histogram:       [ 200, 1600, 7400, 29800, 117400, 195000, 86200, 19200, 
+                     3000, 1000 ]
+- NodeOutputName:  'model_conv2d_2_Conv2D:0'
+  Min:             -0.4956555664539337158203125
+  Max:             0.517408311367034912109375
+  Histogram:       [ 600, 800, 8400, 61600, 183800, 160000, 39400, 5200, 
+                     600, 400 ]
+- NodeOutputName:  'model_conv2d_3_Conv2D:0'
+  Min:             -0.4331277310848236083984375
+  Max:             0.355837166309356689453125
+  Histogram:       [ 800, 3600, 15200, 81400, 205200, 349000, 195400, 56800, 
+                     12000, 2200 ]
+- NodeOutputName:  'model_conv2d_4_Conv2D:0'
+  Min:             -0.7659289836883544921875
+  Max:             0.70918369293212890625
+  Histogram:       [ 200, 2000, 21600, 154800, 605800, 760800, 255800, 
+                     38800, 3200, 200 ]
+- NodeOutputName:  'model_conv2d_5_BiasAdd_model_conv2d_5_Conv2D_model_conv2d_5_BiasAdd_ReadVariableOp_resource1:0'
+  Min:             -4.21796894073486328125
+  Max:             6.141674041748046875
+  Histogram:       [ 116, 3413, 46697, 493718, 913352, 159607, 17935, 3032, 
+                     472, 58 ]
+- NodeOutputName:  'model_conv2d_5_BiasAdd_model_conv2d_5_Conv2D_model_conv2d_5_BiasAdd_ReadVariableOp_resource:0'
+  Min:             -0.26560080051422119140625
+  Max:             0.31076204776763916015625
+  Histogram:       [ 600, 200, 1000, 800, 1200, 600, 400, 800, 400, 400 ]
+- NodeOutputName:  'model_conv2d_5_Conv2D:0'
+  Min:             -0.4723881781101226806640625
+  Max:             0.594834983348846435546875
+  Histogram:       [ 600, 800, 9200, 21600, 35000, 25000, 6800, 2600, 200, 
+                     600 ]
+- NodeOutputName:  'model_conv2d_6_Conv2D:0'
+  Min:             -0.182841718196868896484375
+  Max:             0.1875782310962677001953125
+  Histogram:       [ 1200, 8800, 103200, 556400, 1.3972e+06, 1.168e+06, 
+                     370600, 68400, 11400, 1200 ]
+- NodeOutputName:  'model_conv2d_7_Conv2D:0'
+  Min:             -1.611114978790283203125
+  Max:             1.83821666240692138671875
+  Histogram:       [ 5400, 53800, 429800, 1.604e+06, 2.6194e+06, 1.8646e+06, 
+                     651200, 128400, 14200, 2000 ]
+- NodeOutputName:  'model_conv2d_8_BiasAdd_model_conv2d_8_Conv2D_model_conv2d_8_BiasAdd_ReadVariableOp_resource1:0'
+  Min:             -12.95457553863525390625
+  Max:             7.69653987884521484375
+  Histogram:       [ 130, 1884, 11414, 46836, 151343, 327598, 238541, 37933, 
+                     3331, 190 ]
+- NodeOutputName:  'model_conv2d_8_BiasAdd_model_conv2d_8_Conv2D_model_conv2d_8_BiasAdd_ReadVariableOp_resource:0'
+  Min:             -0.75639736652374267578125
+  Max:             0.1322815120220184326171875
+  Histogram:       [ 200, 400, 200, 400, 600, 2400, 2600, 2400, 2400, 1200 ]
+- NodeOutputName:  'model_conv2d_8_Conv2D:0'
+  Min:             -0.69246494770050048828125
+  Max:             0.58401262760162353515625
+  Histogram:       [ 200, 1400, 9400, 34600, 116600, 157800, 74200, 13200, 
+                     2000, 200 ]
+- NodeOutputName:  'model_conv2d_Conv2D:0'
+  Min:             -0.0202908217906951904296875
+  Max:             0.02119793184101581573486328125
+  Histogram:       [ 400, 400, 2800, 10600, 34200, 27600, 7600, 1800, 800, 
+                     200 ]
+- NodeOutputName:  'model_dense_BiasAdd_ReadVariableOp_resource:0'
+  Min:             -0.15625350177288055419921875
+  Max:             0.1792979538440704345703125
+  Histogram:       [ 400, 200, 200, 0, 200, 200, 400, 0, 0, 400 ]
+- NodeOutputName:  'model_dense_MatMul__1:0'
+  Min:             -2.7678143978118896484375
+  Max:             3.880407810211181640625
+  Histogram:       [ 6200, 12000, 23200, 25000, 27000, 21000, 8400, 3400, 
+                     800, 1000 ]
+- NodeOutputName:  'model_dense_MatMul_model_dense_BiasAdd:0'
+  Min:             -24.518726348876953125
+  Max:             19.1756114959716796875
+  Histogram:       [ 31, 159, 418, 574, 472, 206, 82, 43, 13, 2 ]
+- NodeOutputName:  'model_dense_MatMul_model_dense_BiasAdd_bias:0'
+  Min:             -24.518726348876953125
+  Max:             19.1756114959716796875
+  Histogram:       [ 31, 159, 418, 574, 472, 206, 82, 43, 13, 2 ]
+- NodeOutputName:  'model_dense_MatMul_model_dense_BiasAdd_dot:0'
+  Min:             -24.5792255401611328125
+  Max:             19.3318653106689453125
+  Histogram:       [ 30, 159, 415, 584, 471, 204, 85, 38, 12, 2 ]
+- NodeOutputName:  'model_flatten_Reshape:0'
+  Min:             0.0
+  Max:             4.941341876983642578125
+  Histogram:       [ 4027, 4302, 2525, 1224, 481, 170, 51, 15, 3, 2 ]
+- NodeOutputName:  'zero:0'
+  Min:             0.0
+  Max:             0.0
+  Histogram:       [ 3.2768e+06, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+- NodeOutputName:  'zero__1:0'
+  Min:             0.0
+  Max:             0.0
+  Histogram:       [ 3.2768e+06, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+- NodeOutputName:  'zero__2:0'
+  Min:             0.0
+  Max:             0.0
+  Histogram:       [ 3.2768e+06, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+- NodeOutputName:  'zero__3:0'
+  Min:             0.0
+  Max:             0.0
+  Histogram:       [ 1.6384e+06, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+- NodeOutputName:  'zero__4:0'
+  Min:             0.0
+  Max:             0.0
+  Histogram:       [ 1.6384e+06, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+- NodeOutputName:  'zero__5:0'
+  Min:             0.0
+  Max:             0.0
+  Histogram:       [ 819200, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+- NodeOutputName:  'zero__6:0'
+  Min:             0.0
+  Max:             0.0
+  Histogram:       [ 819200, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+...
