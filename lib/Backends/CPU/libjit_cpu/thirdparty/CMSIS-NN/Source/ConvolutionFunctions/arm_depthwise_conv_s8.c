@@ -39,6 +39,7 @@
  * @addtogroup NNConv
  * @{
  */
+#include<stdio.h>
 
 #if !defined(__ARMCC_VERSION)
 __attribute__((optimize("no-unroll-loops")))
@@ -246,7 +247,6 @@ static void depthwise_conv_s8_generic(const int8_t *input,
                                 acc_0 += (input[idx_0] + input_offset) * kernel[ker_idx_0];
                             }
                         }
-
                         /* Requantize and clamp output to provided range */
                         acc_0 = arm_nn_requantize(acc_0, output_mult[idx_out_ch], output_shift[idx_out_ch]);
                         acc_0 += output_offset;

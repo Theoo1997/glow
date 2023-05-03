@@ -61,8 +61,7 @@ void libjit_depthwise_conv2_3d_i8_i32_cmsis_wrapper(
     const int32_t *biasW, const dim_t *outWdims, const dim_t *inWdims,
     const dim_t *filterWdims, const dim_t *biasWdims, const dim_t *kernels,
     const dim_t *strides, const dim_t *pads, dim_t group, const dim_t *dilation,
-    int32_t outOffset, int32_t inOffset, int32_t *filterOffsetsPtr,
-    int32_t *biasOffsetsPtr, const int32_t *biasPrePtr,
+    int32_t outOffset, int32_t inOffset, const int32_t *biasPrePtr,
     const int32_t *biasPostPtr, const int32_t *biasScalePtr,
     const int32_t *outPrePtr, const int32_t *outPostPtr,
     const int32_t *outScalePtr, int32_t actType, const int32_t *actArgs,const int32_t * cmsis_ScaleV,const int32_t * cmsis_OffsetV) {
@@ -90,19 +89,19 @@ void libjit_depthwise_conv2_3d_i8_i32_cmsis_wrapper(
     // Relu.
     activation = {0,outOffset};
     }
-    cmsis_nn_dw_conv_params conv_params = {inOffset,/*ch_mult == */ 1, outOffset, stride, padding, CMSIS_dilation, activation}; // TODOO: find cases where ch_mult != 1 
+    cmsis_nn_dw_conv_params conv_params = {inOffset, outOffset, /*ch_mult == */ 1, stride, padding, CMSIS_dilation, activation}; // TODOO: find cases where ch_mult != 1 
     
     //Alocate Scratch Buffer for cmsis. TODOO Put it when libjit is builded.
     float *cmsis_buffer = nullptr;
-    int32_t  buffer = arm_depthwise_conv_wrapper_s8_get_buffer_size(&conv_params,&input_dims, &filter_dims, &output_dims);
-                                                                                                           
+    int32_t  buffer = arm_depthwise_conv_wrapper_s8_get_buffer_size(&conv_params,&input_dims, &filter_dims, &output_dims);                                                                                                   
     libjit_aligned_malloc((void **) &cmsis_buffer,64 ,buffer);
     cmsis_nn_context ctx = {(void*) cmsis_buffer,0};
-    
+
     status = arm_depthwise_conv_wrapper_s8(&ctx,&conv_params,&quant_params,&input_dims,inW,&filter_dims,filterW,&bias_dims,biasW,&output_dims,outW);
     if (status != ARM_CMSIS_NN_SUCCESS){
       status ==  ARM_CMSIS_NN_ARG_ERROR ? printf("Scratch Buffer error\n") : printf("ARM_CMSIS_NN_NO_IMPL_ERROR\n");
     }
+
     libjit_aligned_free(cmsis_buffer);
 }
 
@@ -111,8 +110,7 @@ void libjit_channelwise_conv2_3d_i8_i32_cmsis_wrapper(
     const int32_t *biasW, const dim_t *outWdims, const dim_t *inWdims,
     const dim_t *filterWdims, const dim_t *biasWdims, const dim_t *kernels,
     const dim_t *strides, const dim_t *pads, dim_t group, const dim_t *dilation,
-    int32_t outOffset, int32_t inOffset, int32_t *filterOffsetsPtr,
-    int32_t *biasOffsetsPtr, const int32_t *biasPrePtr,
+    int32_t outOffset, int32_t inOffset, const int32_t *biasPrePtr,
     const int32_t *biasPostPtr, const int32_t *biasScalePtr,
     const int32_t *outPrePtr, const int32_t *outPostPtr,
     const int32_t *outScalePtr, int32_t actType, const int32_t *actArgs,const int32_t * cmsis_ScaleV,const int32_t * cmsis_OffsetV) {

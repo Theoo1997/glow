@@ -117,6 +117,122 @@ void CPULLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
                 depthStripsVal});
     break;
   }
+// case Kinded::Kind::ConvolutionInstKind: {
+//     auto *CI = cast<ConvolutionInst>(I);
+//     assert(CI->getLayout() == NHWC &&
+//            "Glow CPU Backend supports only NHWC Convolutions");
+//     auto *dest = CI->getDest();
+//     auto *src = CI->getSrc();
+//     auto *filter = CI->getFilter();
+//     auto *bias = CI->getBias();
+//     auto *destPtr = emitValueAddress(builder, dest);
+//     auto *srcPtr = emitValueAddress(builder, src);
+//     auto *filterPtr = emitValueAddress(builder, filter);
+//     auto *biasPtr = emitValueAddress(builder, bias);
+
+//     auto *destDims = emitValueDims(builder, dest);
+//     auto *srcDims = emitValueDims(builder, src);
+//     auto *filterDims = emitValueDims(builder, filter);
+//     auto *biasDims = emitValueDims(builder, bias);
+
+//     auto *kernels = emitConstDimTArray(builder, CI->getKernels());
+//     auto *strides = emitConstDimTArray(builder, CI->getStrides());
+//     auto *pads = emitConstDimTArray(builder, CI->getPads());
+//     auto *group = emitConstDimT(builder, CI->getGroup());
+//     auto *dilation = emitConstDimTArray(builder, CI->getDilation());
+//     auto *actType = emitConstI32(builder, CI->getFusedActivation());
+
+//     if (src->getType()->isQuantizedType()) {
+//       auto *destTy = dest->getType();
+//       auto *srcTy = src->getType();
+//       auto *filterTy = filter->getType();
+//       auto *biasTy = bias->getType();
+
+//       auto *destOffset = emitConstI32(builder, destTy->getOffset());
+//       auto *srcOffset = emitConstI32(builder, -srcTy->getOffset());
+
+//       // Compute quantization parameters for each channel.
+//       auto channelNum = dest->dims().back();
+//       std::vector<llvm::Constant *> biasPreV(channelNum);
+//       std::vector<llvm::Constant *> biasPostV(channelNum);
+//       std::vector<llvm::Constant *> biasScaleV(channelNum);
+//       std::vector<llvm::Constant *> outputPreV(channelNum);
+//       std::vector<llvm::Constant *> outputPostV(channelNum);
+//       std::vector<llvm::Constant *> outputScaleV(channelNum);
+
+//       std::vector<llvm::Constant *> cmsis_ScaleV(channelNum);
+//       std::vector<llvm::Constant *> cmsis_OffsetV(channelNum);
+//       for (size_t i = 0; i < channelNum; i++) {
+
+//         // Compute the scaling parameters for bias and output.
+//         float matMulScale = srcTy->getScale() * filterTy->getScale();
+//         auto biasScaleParam = quantization::quantizeScaleOffset32To8(
+//             biasTy->getScale() / matMulScale, 0);
+//         auto outScaleParam = quantization::quantizeScaleOffset32To8(
+//             matMulScale / destTy->getScale(), 0);
+//         auto cmsis_outScaleParam = quantization::CMSIS_quantizeScaleOffset32To8(
+//               matMulScale / destTy->getScale(), destTy->getOffset());
+
+//         // Pass the pre-shift, post-shift and integer scale parameters for the
+//         // bias and output calculation.
+//         biasPreV[i] = llvm::ConstantInt::get(builder.getInt32Ty(),
+//                                               biasScaleParam.pre, true);
+//         biasPostV[i] = llvm::ConstantInt::get(builder.getInt32Ty(),
+//                                               biasScaleParam.post, true);
+//         biasScaleV[i] = llvm::ConstantInt::get(builder.getInt32Ty(),
+//                                                 biasScaleParam.scale, true);
+//         outputPreV[i] =
+//             llvm::ConstantInt::get(builder.getInt32Ty(), outScaleParam.pre, true);
+//         outputPostV[i] = llvm::ConstantInt::get(builder.getInt32Ty(),
+//                                                 outScaleParam.post, true);
+//         outputScaleV[i] = llvm::ConstantInt::get(builder.getInt32Ty(),
+//                                                   outScaleParam.scale, true);
+
+//         cmsis_ScaleV[i] = llvm::ConstantInt::get(builder.getInt32Ty(),
+//                                                 cmsis_outScaleParam.cmsis_scale, true);
+//         cmsis_OffsetV[i] = llvm::ConstantInt::get(builder.getInt32Ty(),
+//                                                   cmsis_outScaleParam.cmsis_offset, true);
+//       }
+
+//       // Pass the pre-shift, post-shift and integer scale parameters for the
+//       // bias and output calculation.
+//       auto *biasPrePtr = emitConstArray(builder, biasPreV, builder.getInt32Ty());
+//       auto *biasPostPtr =
+//           emitConstArray(builder, biasPostV, builder.getInt32Ty());
+//       auto *biasScalePtr =
+//           emitConstArray(builder, biasScaleV, builder.getInt32Ty());
+//       auto *outputPrePtr =
+//           emitConstArray(builder, outputPreV, builder.getInt32Ty());
+//       auto *outputPostPtr =
+//           emitConstArray(builder, outputPostV, builder.getInt32Ty());
+//       auto *outputScalePtr =
+//           emitConstArray(builder, outputScaleV, builder.getInt32Ty());
+
+//       auto *cmsis_ScalePtr =
+//           emitConstArray(builder, cmsis_ScaleV, builder.getInt32Ty());
+//       auto *cmsis_OffsetPtr =
+//           emitConstArray(builder, cmsis_OffsetV, builder.getInt32Ty());
+
+//       // Emit parameters for fused activation.
+//       auto *actArgsQuant = emitConstQuantActivationArgs(builder, CI);
+
+//       bool isDepthwise = (filter->dims()[3] == 1 && dest->dims()[3] == src->dims()[3]);
+//       auto *F = getFunction(isDepthwise ? "depthwise_conv2_3d_i8_i32_cmsis_wrapper"
+//                                       : "channelwise_conv2_3d_i8_i32_cmsis_wrapper");
+
+//       createCall(builder, F,
+//               {destPtr,        srcPtr,        filterPtr,      biasPtr,
+//                destDims,       srcDims,       filterDims,     biasDims,
+//                kernels,        strides,       pads,           group,
+//                dilation,       destOffset,    srcOffset,   biasPrePtr,    
+//                biasPostPtr,    biasScalePtr,  outputPrePtr,   outputPostPtr, 
+//                outputScalePtr, actType, actArgsQuant, cmsis_ScalePtr, cmsis_OffsetPtr });
+//     }
+//     else{
+//         LLVMIRGen::generateLLVMIRForInstr(builder, I);
+//     }
+//     break;
+// }
 case Kinded::Kind::ChannelwiseQuantizedConvolutionInstKind: {
     auto *CQCI = cast<ChannelwiseQuantizedConvolutionInst>(I);
     auto *dest = CQCI->getDest();

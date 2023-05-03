@@ -29,8 +29,8 @@
  *
  * -------------------------------------------------------------------- */
 
+#include <stdio.h>
 #include "../../Include/arm_nnfunctions.h"
-
 /**
  *  @ingroup Public
  */
@@ -58,6 +58,28 @@ arm_cmsis_nn_status arm_depthwise_conv_wrapper_s8(const cmsis_nn_context *ctx,
                                                   const cmsis_nn_dims *output_dims,
                                                   int8_t *output)
 {
+    // printf("filter_data[0] == %d\n",filter[0]);
+
+    // printf("quant_params_multiplier[0] == %d\n",quant_params->multiplier[0]);
+    // printf("quant_params_shift[0] == %d\n",quant_params->shift[0]);
+    
+    // printf("conv_params->input_offset == %d\n",dw_conv_params->input_offset);
+    // printf("conv_params->output_offset == %d\n", dw_conv_params->output_offset);
+    // printf("conv_params->activation.min %d\n",dw_conv_params->activation.min);
+    // printf("conv_params->activation.max %d\n",dw_conv_params->activation.max);
+    // printf("conv_params->ch_mult %d\n",dw_conv_params->ch_mult);
+    // printf("filter_dims->n == %d\n",filter_dims->n);
+    // printf(" output_dims->c == %d\n",output_dims->c);
+
+    // printf("input_dims->w %d\n",input_dims->w);
+    // printf("input_dims->h %d\n",input_dims->h);
+    // printf("input_dims->c %d\n",input_dims->c);
+    // printf("filter_dims->w %d\n",filter_dims->w);
+    // printf("filter_dims->h %d\n",filter_dims->h);
+    // printf("output_dims->w %d\n",output_dims->w);
+    // printf("output_dims->h %d\n",output_dims->h);
+    // printf("output_dims->c %d\n",output_dims->c);
+
     arm_cmsis_nn_status status = ARM_CMSIS_NN_SUCCESS;
     if (1 == dw_conv_params->ch_mult && input_dims->n == 1 && dw_conv_params->dilation.w == 1 &&
         dw_conv_params->dilation.h == 1)
