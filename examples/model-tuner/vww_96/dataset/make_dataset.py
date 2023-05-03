@@ -27,6 +27,7 @@ def generate_file_contents():
       png_image = dir_path + "/images/" + file[:-3] + "png"
       img.save(png_image, format='PNG')
 
+
   for file in os.listdir(NON_PERSON_DIR):
       input_filename = os.fsdecode(file)
       if input_filename[5]=='v':
@@ -34,7 +35,7 @@ def generate_file_contents():
         outfile.write(line)
         img = Image.open(NON_PERSON_DIR + file)
         png_image = dir_path + "/images/" + file[:-3] + "png"
-        img.save(png_image, format='PNG')
+
 
   outfile.flush()
   outfile.close()
