@@ -2231,6 +2231,10 @@ void BoundInterpreterFunction::fwdSigmoidGradInst(const SigmoidGradInst *) {
   llvm_unreachable("SigmoidGrad instruction is not supported yet");
 }
 
+void BoundInterpreterFunction::fwdTanhGradInst(const TanhGradInst *) {
+  llvm_unreachable("TanhGrad instruction is not supported yet");
+}
+
 void BoundInterpreterFunction::fwdNanToNumInst(const NanToNumInst *) {
   llvm_unreachable("NanToNum instruction is not supported yet");
 }
@@ -2383,6 +2387,34 @@ void BoundInterpreterFunction::fwdCrossEntropyLossInstFloatImpl(
     float p_n = P.at({n, y});
     CE.at({0}) -= log(p_n);
   }
+}
+
+void BoundInterpreterFunction::fwdBinaryCrossEntropyWithLogitsInst(
+    const BinaryCrossEntropyWithLogitsInst * /*unused*/) {
+  llvm_unreachable(
+      "BinaryCrossEntropyWithLogitsInst instruction not supported on "
+      "Inrerpretter backend\n");
+}
+
+void BoundInterpreterFunction::fwdWeightBinaryCrossEntropyWithLogitsInst(
+    const WeightBinaryCrossEntropyWithLogitsInst * /*unused*/) {
+  llvm_unreachable(
+      "BinaryCrossEntropyWithLogitsInst instruction not supported on "
+      "Inrerpretter backend\n");
+}
+
+void BoundInterpreterFunction::fwdPosWeightBinaryCrossEntropyWithLogitsInst(
+    const PosWeightBinaryCrossEntropyWithLogitsInst * /*unused*/) {
+  llvm_unreachable(
+      "BinaryCrossEntropyWithLogitsInst instruction not supported on "
+      "Inrerpretter backend\n");
+}
+
+void BoundInterpreterFunction::fwdSimpleBinaryCrossEntropyWithLogitsInst(
+    const SimpleBinaryCrossEntropyWithLogitsInst * /*unused*/) {
+  llvm_unreachable(
+      "BinaryCrossEntropyWithLogitsInst instruction not supported on "
+      "Inrerpretter backend\n");
 }
 
 void BoundInterpreterFunction::fwdCrossEntropyLossInst(
@@ -6741,6 +6773,10 @@ void BoundInterpreterFunction::fwdIndexAddInst(glow::IndexAddInst const *I) {
 template <typename ElemTy, typename IndexTy>
 void BoundInterpreterFunction::fwdIndexAddInstImpl(glow::IndexAddInst const *) {
   llvm_unreachable("not yet implemented");
+}
+
+void BoundInterpreterFunction::fwdMeanInst(glow::MeanInst const *) {
+  llvm_unreachable("Mean instruction is not supported yet");
 }
 
 #define DISPATCH_ARG_MIN_MAX(functionName, elemTy, elemTyIndex, ...)           \
