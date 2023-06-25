@@ -15,6 +15,10 @@
 
 #include "CMSIS.h"
 
+#include <thread>
+#include <vector>
+#include <numeric>
+
 namespace glow {
 
 Expected<std::unique_ptr<CompiledFunction>> CMSISBackend::compile(Function *F) const {
@@ -35,11 +39,17 @@ bool CMSISBackend::isOpSupported(const NodeInfo&NI) const {
 }
 
 unsigned CMSISBackend::numDevices() {
-    return 1;
+    unsigned ht = std::thread::hardware_concurrency();
+    if (!ht)
+	return 1;
+
+    return ht;
 }
 
 std::vector<unsigned> CMSISBackend::scanDeviceIDs() {
-    return {0};
+    std::vector<unsigned> deviceIDs(CMSISBackend::numDevices());
+    std::iota(deviceIDs.begin(), deviceIDs.end(), 0);
+    return deviceIDs;
 }
 
 } // namespace glow
