@@ -15,11 +15,31 @@ list(APPEND LIBJIT_CPU_SOURCE_FILES
 list(APPEND LIBJIT_CPU_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/libjit_cpu.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/libjit_cpu_conv.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/libjit_CMSIS.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/FullyConnectedFunctions/arm_fully_connected_s8.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/NNSupportFunctions/arm_nn_vec_mat_mult_t_s8.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/ConvolutionFunctions/arm_convolve_wrapper_s8.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/ConvolutionFunctions/arm_convolve_1x1_s8.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/ConvolutionFunctions/arm_convolve_1x1_s8_fast.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/ConvolutionFunctions/arm_convolve_1_x_n_s8.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/NNSupportFunctions/arm_nn_mat_mult_nt_t_s8.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/ConvolutionFunctions/arm_convolve_s8.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/ConvolutionFunctions/arm_convolve_get_buffer_sizes_s8.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/NNSupportFunctions/arm_nn_mat_mul_core_4x_s8.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/ConvolutionFunctions/arm_nn_mat_mult_s8.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/NNSupportFunctions/arm_q7_to_q15_with_offset.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/ConvolutionFunctions/arm_nn_mat_mult_kernel_s8_s16.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/ConvolutionFunctions/arm_depthwise_conv_wrapper_s8.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/ConvolutionFunctions/arm_depthwise_conv_get_buffer_sizes_s8.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/ConvolutionFunctions/arm_depthwise_conv_3x3_s8.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/ConvolutionFunctions/arm_depthwise_conv_s8.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Source/ConvolutionFunctions/arm_depthwise_conv_s8_opt.c
 )
 
 # LIBJIT CPU compile options.
 set(LIBJIT_CPU_COMPILE_OPTIONS
   -I${CMAKE_CURRENT_SOURCE_DIR}/../../LLVMIRCodeGen/libjit
+  -I${CMAKE_CURRENT_SOURCE_DIR}/libjit_cpu/thirdparty/CMSIS-NN/Include
   -std=c++14
   -g
   -O0
