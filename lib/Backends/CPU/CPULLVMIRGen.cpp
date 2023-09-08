@@ -117,6 +117,7 @@ void CPULLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
                 depthStripsVal});
     break;
   }
+<<<<<<< Updated upstream
 // case Kinded::Kind::ConvolutionInstKind: {
 //     auto *CI = cast<ConvolutionInst>(I);
 //     assert(CI->getLayout() == NHWC &&
@@ -411,6 +412,8 @@ case Kinded::Kind::ChannelwiseQuantizedConvolutionInstKind: {
       }
   }
       break;
+=======
+>>>>>>> Stashed changes
   default:
     LLVMIRGen::generateLLVMIRForInstr(builder, I);
   }

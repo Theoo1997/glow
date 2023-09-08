@@ -2179,6 +2179,10 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
           biasTy->getScale() / matMulScale, 0);
       auto outScaleParam = quantization::quantizeScaleOffset32To8(
           matMulScale / destTy->getScale(), 0);
+#ifdef GLOW_WITH_CMSIS
+      auto cmsisOutScaleParam = quantization::CMSIS_quantizeScaleOffset32To8(
+	  matMulScale / destTy->getScale(), destTy->getOffset());
+#endif
 
       // Pass the pre-shift, post-shift and integer scale parameters for the
       // bias and output calculation.
@@ -2188,6 +2192,10 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
       auto *outPre = emitConstI32(builder, outScaleParam.pre);
       auto *outPost = emitConstI32(builder, outScaleParam.post);
       auto *outScale = emitConstI32(builder, outScaleParam.scale);
+#ifdef GLOW_WITH_CMSIS
+      auto *cmsisOutScale = emitConstI32(builder, cmsisOutScaleParam.cmsis_scale);
+      auto *cmsisOutOffset = emitConstI32(builder, cmsisOutScaleParam.cmsis_offset);
+#endif
 
       auto *F =
           getFunction("fc", {dest->getElementType(), bias->getElementType()});
@@ -2195,7 +2203,11 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
                  {destPtr, srcPtr, weightsPtr, biasPtr, destDims, srcDims,
                   weightsDims, biasDims, destOffset, srcOffset, weightsOffset,
                   biasOffset, biasPre, biasPost, biasScale, outPre, outPost,
-                  outScale});
+#ifndef GLOW_WITH_CMSIS
+                  outScale, 0, 0});
+#else
+		  outScale, cmsisOutScale, cmsisOutOffset});
+#endif
     } else {
       auto *F = getFunction("fc", dest->getElementType());
       createCall(builder, F,
@@ -2706,6 +2718,11 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
     std::vector<llvm::Constant *> outputPreV(channelNum);
     std::vector<llvm::Constant *> outputPostV(channelNum);
     std::vector<llvm::Constant *> outputScaleV(channelNum);
+
+#ifdef GLOW_WITH_CMSIS
+    std::vector<llvm::Constant *> cmsisScaleV(channelNum);
+    std::vector<llvm::Constant *> cmsisOffsetV(channelNum);
+#endif
     for (size_t i = 0; i < channelNum; i++) {
 
       // Compute the scaling parameters for bias and output.
@@ -2714,6 +2731,10 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
           biasScalesH.raw(i) / matMulScale, 0);
       auto outScaleParam = quantization::quantizeScaleOffset32To8(
           matMulScale / destTy->getScale(), 0);
+#ifdef GLOW_WITH_CMSIS
+      auto cmsisOutScaleParam = quantization::CMSIS_quantizeScaleOffset32To8(
+         matMulScale / destTy->getScale(), destTy->getOffset());
+#endif
 
       // Pass the pre-shift, post-shift and integer scale parameters for the
       // bias and output calculation.
@@ -2729,6 +2750,12 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
                                               outScaleParam.post, true);
       outputScaleV[i] = llvm::ConstantInt::get(builder.getInt32Ty(),
                                                outScaleParam.scale, true);
+#ifdef GLOW_WITH_CMSIS
+      cmsisScaleV[i] = llvm::ConstantInt::get(builder.getInt32Ty(),
+		      			      cmsisOutScaleParam.cmsis_scale, true);
+      cmsisOffsetV[i] = llvm::ConstantInt::get(builder.getInt32Ty(),
+		      			      cmsisOutScaleParam.cmsis_offset, true);
+#endif
     }
 
     auto *destPtr = emitValueAddress(builder, dest);
@@ -2764,6 +2791,13 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
     auto *outputScalePtr =
         emitConstArray(builder, outputScaleV, builder.getInt32Ty());
 
+#ifdef GLOW_WITH_CMSIS
+    auto *cmsisScalePtr =
+	emitConstArray(builder, cmsisScaleV, builder.getInt32Ty());
+    auto *cmsisOffsetPtr =
+	emitConstArray(builder, cmsisOffsetV, builder.getInt32Ty());
+#endif
+
     bool isConv3D = (srcTy->dims().size() == 5);
     auto *F = getFunction(isConv3D ? "channelwise_quantized_conv3d"
                                    : "channelwise_quantized_conv2d",
@@ -2779,7 +2813,11 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
                 dilation,       destOffset,    srcOffset,      filterOffsetsPtr,
                 biasOffsetsPtr, biasPrePtr,    biasPostPtr,    biasScalePtr,
                 outputPrePtr,   outputPostPtr, outputScalePtr, actType,
-                actArgsQuant});
+#ifndef GLOW_WITH_CMSIS
+                actArgsQuant, 0, 0});
+#else
+    		actArgsQuant, cmsisScalePtr, cmsisOffsetPtr});
+#endif
     break;
   }
 

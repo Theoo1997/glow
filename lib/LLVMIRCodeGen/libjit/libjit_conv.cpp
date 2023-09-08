@@ -24,6 +24,14 @@
 
 #include "libjit_defs.h"
 
+/* Re-definition warnings */
+#undef MIN
+#undef MAX
+
+#include "../CMSIS-NN/Include/arm_nnfunctions.h"
+#include "../CMSIS-NN/Include/arm_nn_math_types.h"
+#include "../CMSIS-NN/Include/arm_nnsupportfunctions.h"
+
 namespace {
 // Initialize the convolution output frame for slice \p N with the bias \p
 // biasW.
@@ -536,12 +544,90 @@ void libjit_channelwise_quantized_conv2d_i8_i32(
     int32_t *biasOffsetsPtr, const int32_t *biasPrePtr,
     const int32_t *biasPostPtr, const int32_t *biasScalePtr,
     const int32_t *outPrePtr, const int32_t *outPostPtr,
-    const int32_t *outScalePtr, int32_t actType, const int32_t *actArgs) {
+    const int32_t *outScalePtr, int32_t actType, const int32_t *actArgs,
+    const int32_t *cmsisScaleV, const int32_t *cmsisOffsetV) {
+#ifndef GLOW_WITH_CMSIS
   libjit_channelwise_quantized_conv2d_generic<int8_t, int32_t>(
       outW, inW, filterW, biasW, outWdims, inWdims, filterWdims, biasWdims,
       kernels, strides, pads, group, dilation, outOffset, inOffset,
       filterOffsetsPtr, biasOffsetsPtr, biasPrePtr, biasPostPtr, biasScalePtr,
       outPrePtr, outPostPtr, outScalePtr, actType, actArgs);
+#else
+  cmsis_nn_activation activation;
+
+  cmsis_nn_dims input_dims = {(int32_t) inWdims[0], (int32_t) inWdims[2],
+      (int32_t) inWdims[1], (int32_t) inWdims[3]};
+  cmsis_nn_dims filter_dims = {(int32_t) outWdims[3], (int32_t) kernels[0],
+      (int32_t) kernels[0], (int32_t) inWdims[3]};
+  cmsis_nn_dims bias_dims = {(int32_t) inWdims[0], (int32_t) biasWdims[1],
+      (int32_t) biasWdims[2], (int32_t) outWdims[3]};
+  cmsis_nn_dims output_dims = {(int32_t) inWdims[0], (int32_t) outWdims[1],
+      (int32_t) outWdims[2], (int32_t) outWdims[3]};
+
+  cmsis_nn_per_channel_quant_params quant_params = {(int32_t *) cmsisScaleV,
+      (int32_t *) cmsisOffsetV}; /* TODO change this with the write scale and offset */
+  cmsis_nn_tile stride = {(int32_t) strides[1], (int32_t) strides[0]};
+  cmsis_nn_tile padding = {(int32_t) pads[1], (int32_t) pads[0]};
+  cmsis_nn_tile cmsisDilation = {(int32_t) dilation[1], (int32_t) dilation[0]};
+
+  /* TODO Add support for clip and lRELU, validate this is correct */
+  if (actType == 0) {
+      /* No activation */
+      activation = {-128, 128};
+  } else /* if (actType == 1) */ {
+      activation = {0, outOffset};
+  }
+
+  arm_cmsis_nn_status status;
+  float *cmsisBuffer = NULL;
+  if (filterWdims[3] == 1 && outWdims[3] == inWdims[3]) {
+      /* TODO find cases where ch_mult != 1 */
+      cmsis_nn_dw_conv_params conv_params = {inOffset, /*ch_mult == */ 1,
+	  outOffset, stride, padding, cmsisDilation, activation};
+
+      /* Allocate scratch buffer for cmsis. TODO move it to the libjit building phase */
+      int32_t buffer = arm_depthwise_conv_wrapper_s8_get_buffer_size(
+	      &conv_params, &input_dims, &filter_dims, &output_dims
+      );
+
+      libjit_aligned_malloc((void **) &cmsisBuffer, 64, buffer);
+      cmsis_nn_context ctx = {(void *) cmsisBuffer, 0};
+
+      status = arm_depthwise_conv_wrapper_s8(&ctx, &conv_params, &quant_params,
+	      &input_dims, inW, &filter_dims, filterW, &bias_dims, biasW,
+	      &output_dims, outW);
+  } else {
+      cmsis_nn_conv_params conv_params = {inOffset, outOffset, stride,
+	  padding, cmsisDilation, activation};
+
+      /* Same */
+      int32_t buffer = arm_convolve_wrapper_s8_get_buffer_size(&conv_params,
+	      &input_dims, &filter_dims, &output_dims);
+
+      libjit_aligned_malloc((void **) &cmsisBuffer, 64, buffer);
+      cmsis_nn_context ctx = {(void *) cmsisBuffer, 0};
+
+      /* TODO this is not a good implementation.
+       * This wrapper should be done in CPULLVMIRGen.
+       * Calling a wrapper inside of a wrapper will put unnecessary
+       * implementations of kernels inside libjit. (unnecessary RAM usage from .o).
+       */
+
+      status = arm_convolve_wrapper_s8(&ctx, &conv_params, &quant_params,
+	      &input_dims, inW, &filter_dims, filterW, &bias_dims, biasW,
+	      &output_dims, outW);
+  }
+
+  switch (status) {
+      case ARM_CMSIS_NN_ARG_ERROR:
+	  fprintf(stderr, "Scratch buffer error\n");
+	  break;
+      default:
+	  fprintf(stderr, "ARM_CMSIS_NN_NO_IMPL_ERROR\n");
+  }
+
+  libjit_aligned_free(cmsisBuffer);
+#endif
 }
 
 void libjit_channelwise_quantized_conv2d_i8_i8(
@@ -553,7 +639,7 @@ void libjit_channelwise_quantized_conv2d_i8_i8(
     const int32_t *biasPrePtr, const int32_t *biasPostPtr,
     const int32_t *biasScalePtr, const int32_t *outPrePtr,
     const int32_t *outPostPtr, const int32_t *outScalePtr, int32_t actType,
-    const int32_t *actArgs) {
+    const int32_t *actArgs, const int32_t *cmsisScaleV, const int32_t *cmsisOffsetV) {
   libjit_channelwise_quantized_conv2d_generic<int8_t, int8_t>(
       outW, inW, filterW, biasW, outWdims, inWdims, filterWdims, biasWdims,
       kernels, strides, pads, group, dilation, outOffset, inOffset,
@@ -570,7 +656,8 @@ void libjit_channelwise_quantized_conv3d_i8_i32(
     int32_t *biasOffsetsPtr, const int32_t *biasPrePtr,
     const int32_t *biasPostPtr, const int32_t *biasScalePtr,
     const int32_t *outPrePtr, const int32_t *outPostPtr,
-    const int32_t *outScalePtr, int32_t actType, const int32_t *actArgs) {
+    const int32_t *outScalePtr, int32_t actType, const int32_t *actArgs,
+    const int32_t *cmsisScaleV, const int32_t *cmsisOffsetV) {
   libjit_channelwise_quantized_conv3d_generic<int8_t, int32_t>(
       outW, inW, filterW, biasW, outWdims, inWdims, filterWdims, biasWdims,
       kernels, strides, pads, group, dilation, outOffset, inOffset,
@@ -587,7 +674,7 @@ void libjit_channelwise_quantized_conv3d_i8_i8(
     const int32_t *biasPrePtr, const int32_t *biasPostPtr,
     const int32_t *biasScalePtr, const int32_t *outPrePtr,
     const int32_t *outPostPtr, const int32_t *outScalePtr, int32_t actType,
-    const int32_t *actArgs) {
+    const int32_t *actArgs, const int32_t *cmsisScaleV, const int32_t *cmsisOffsetV) {
   libjit_channelwise_quantized_conv3d_generic<int8_t, int8_t>(
       outW, inW, filterW, biasW, outWdims, inWdims, filterWdims, biasWdims,
       kernels, strides, pads, group, dilation, outOffset, inOffset,
