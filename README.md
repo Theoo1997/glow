@@ -19,6 +19,17 @@ The Common Microcontroller Software Interface Standard [CMSIS](https://github.co
 # Project Overview
 This branch master of Github contains Glow with CMSIS-NN support. CMSIS-NN software library is part of CMSIS and contains efficient neural network kernels developed to maximize the performance and minimize the memory footprint of neural networks on Cortex-M processor cores. This project is under develop and new CMSIS-NN kernels will be added. Currently we only support **Int8** Fully Connected and Convolutional layers. 
 
+# Know issues can be summarized as:
+1.	Currently we implemented CMSIS-NN under the CPU backend. It would be better to create a new backend called” CMSISBackend” and keep the CPU backend as initially was. In the github repo there is an experimental implementation of the CMSISBackend under the CMSIS branch. During testing this backend crashes when the model runs parallel instruction. In the above Figure we can see an example of such an instruction. When we run such a bundle the code will be terminated in the assert() of CPULLVMIRGen.cpp line 45.
+![image](https://github.com/Theoo1997/glow/assets/109102287/4a271421-ad86-4429-9c03-120dc0a8ba8f)
+
+2.	Currently we only support Int8 Channel wise convolution and FC layers. CMSIS NN has other layers that can be added into glow. For example, Int8 per-tensor convolution, Normalization functions, Activation Functions etc.
+3.	In each implemented kernel in CMSIS-NN we can see ARM_MATH_MVEI and ARM_MATH_DSP flags, defined automatically (in arm_math_types.h) depending on the CPU for which you compile and based upon compiler #defines. But generally, both are defined since your core kernels can have a vector part using MVEI extensions and a scalar part using DSP extension. This #defines hasn’t been tested yet, and in order to work further heeder files may be need.
+4.	When we use a Dense layer kernel a reorder of the weights must be accrued in order to have correct results. Glow loads filter weights in a different layout (weightsWdims[1] x inWdims[1]) than models are represented in a Neutron graph (inWdims[1] x weightsWdims[1]). This reorder is inside the Dense kernel (libjit_CMSIS.cpp line 43-49) leading to performance decrease.
+
+5.	In the case of dequantizing the output, TFLM multiplier is not the same with Glow multiplier. For example, a case of Renset I print the first scale multiplier of TFLM (1242405567) vs Glow (1242405376). We can see that this is not 100% equal leading to rang outputs. In order to fix this problem, Pre and Post implementation should be integrated into CMSIS-NN 
+
+
 ## Partners of Glow
 
 Contributions to Glow are welcomed and encouraged! Glow is developed in
