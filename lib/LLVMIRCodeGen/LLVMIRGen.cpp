@@ -25,16 +25,21 @@
 #include "glow/IR/IRUtils.h"
 #include "glow/IR/Instrs.h"
 #include "glow/Quantization/Base/Base.h"
+#include "glow/Support/Debug.h"
 
+#include "llvm/Demangle/Demangle.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Verifier.h"
 #include "llvm/IRReader/IRReader.h"
 #include "llvm/Support/FileSystem.h"
+#include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Target/TargetMachine.h"
+
+#define DEBUG_TYPE "llvmirgen"
 
 using namespace glow;
 using llvm::cast;
@@ -67,6 +72,10 @@ LLVMIRGen::LLVMIRGen(const IRFunction *F, AllocationsInfo &allocationsInfo,
                      std::string mainEntryName, llvm::StringRef libjitBC)
     : F_(F), ctx_(std::make_unique<llvm::LLVMContext>()),
       allocationsInfo_(allocationsInfo), libjitBC_(libjitBC) {
+#if LLVM_VERSION_MAJOR >= 15
+  // This API should fail on LLVM-17, we will need to keep an eye.
+  ctx_->setOpaquePointers(false);
+#endif
   // Legalize main entry name.
   setMainEntryName(mainEntryName);
 }
@@ -77,6 +86,10 @@ LLVMIRGen::LLVMIRGen(const IRFunction *F, AllocationsInfo &allocationsInfo,
     : F_(F), ctx_(std::make_unique<llvm::LLVMContext>()),
       allocationsInfo_(allocationsInfo), libjitBC_(libjitBC),
       objectRegistry_(objectRegistry) {
+#if LLVM_VERSION_MAJOR >= 15
+  // This API should fail on LLVM-17, we will need to keep an eye.
+  ctx_->setOpaquePointers(false);
+#endif
   // Legalize main entry name.
   setMainEntryName(mainEntryName);
 }
@@ -197,9 +210,9 @@ void LLVMIRGen::loadBaseAddresses(llvm::IRBuilder<> &builder) {
 // Search for the standard library bitcode file on disk and load it into an
 // LLVM module. We search for the standard library around the current executable
 // and also in the current directory.
-static std::unique_ptr<llvm::Module>
-loadStandardLibrary(llvm::LLVMContext *ctx, llvm::StringRef filename,
-                    llvm::StringRef libjitBC) {
+std::unique_ptr<llvm::Module>
+LLVMIRGen::loadStandardLibrary(llvm::LLVMContext *ctx, llvm::StringRef filename,
+                               llvm::StringRef libjitBC) {
   using llvm::sys::path::append;
   using llvm::sys::path::parent_path;
 
@@ -207,13 +220,24 @@ loadStandardLibrary(llvm::LLVMContext *ctx, llvm::StringRef filename,
 
   // Parse the compiled-in image of libjit and return the resulting Module.
   // checking for and reporting errors from parseIR.
+  auto memBufRef = llvm::MemoryBufferRef(
+      llvm::StringRef(reinterpret_cast<const char *>(libjitBC.data()),
+                      libjitBC.size()),
+      "libjit.bc");
 
-  auto mod = llvm::parseIR(
-      llvm::MemoryBufferRef(
-          llvm::StringRef(reinterpret_cast<const char *>(libjitBC.data()),
-                          libjitBC.size()),
-          "libjit.bc"),
-      error, *ctx);
+  std::unique_ptr<llvm::Module> mod(nullptr);
+
+  if (shouldUseLLVMModuleLazyLoading()) {
+#if LLVM_VERSION_MAJOR >= 9
+    mod = llvm::getLazyIRModule(llvm::MemoryBuffer::getMemBuffer(memBufRef),
+                                error, *ctx);
+#else
+    LOG(FATAL) << "You need to use LLVM 9 or higher to support lazy loading of "
+                  "LLVM IR modules.";
+#endif
+  } else {
+    mod = llvm::parseIR(memBufRef, error, *ctx);
+  }
 
   if (!mod) {
     error.print("LLVMIRGen", llvm::errs());
@@ -332,12 +356,14 @@ void LLVMIRGen::performCodeGen() {
 void LLVMIRGen::finishCodeGen() {
   if (dumpLLVMIR) {
     llvm::outs() << "LLVM module before optimizations:\n";
-    llmodule_->print(llvm::outs(), nullptr);
+    dump();
   }
   // Perform verification if no debug info is being emitted.
   // Otherwise, the verification is performed later by
   // generateDebugInfo, once the debug info emission is finalized.
-  if (!emitDebugInfo) {
+  // Also disable verification when an external compiler is used
+  // to build the model to avoid IR compatibility issues.
+  if (!emitDebugInfo && llvmCompiler.empty()) {
     // Perform verification, but ignore any debug info errors for now.
     // Debug info errors will be checked later by generateDebugInfo.
     bool brokenDebugInfo = false;
@@ -354,7 +380,7 @@ void LLVMIRGen::finishCodeGen() {
 
   if (dumpLLVMIR) {
     llvm::outs() << "LLVM module after optimizations:\n";
-    llmodule_->print(llvm::outs(), nullptr);
+    dump();
   }
 
   if (dumpLLVMAsm) {
@@ -641,6 +667,10 @@ llvm::Value *LLVMIRGen::emitConstF32(llvm::IRBuilder<> &builder, float val) {
   return llvm::ConstantFP::get(llvm::Type::getFloatTy(getLLVMContext()), val);
 }
 
+llvm::Value *LLVMIRGen::emitConstI64(llvm::IRBuilder<> &builder, int64_t val) {
+  return builder.getInt64(val);
+}
+
 llvm::Value *LLVMIRGen::emitConstI32(llvm::IRBuilder<> &builder, int32_t val) {
   return builder.getInt32(val);
 }
@@ -755,21 +785,111 @@ static std::string createName(const std::string &name, ElemKind elemTy) {
   }
 }
 
+void LLVMIRGen::initLLVMFunctionNameToMangledNameMap() {
+  CHECK(llvmFunctionNameToMangledName_.empty());
+  constexpr size_t maxFnBaseNameLen = 4096;
+  char *fnNameBuf = static_cast<char *>(std::malloc(maxFnBaseNameLen));
+  // Build a map from names to the list of matching mangled names.
+  for (llvm::Function &F : getModule()) {
+    auto mangledName = F.getName().str();
+    llvm::ItaniumPartialDemangler Mangler;
+    if (Mangler.partialDemangle(mangledName.c_str())) {
+      // Could not demangle.
+      continue;
+    }
+    size_t fnNameLen = maxFnBaseNameLen;
+    char *demangledNamePtr = Mangler.getFunctionBaseName(fnNameBuf, &fnNameLen);
+    if (!demangledNamePtr || fnNameLen == 0) {
+      continue;
+    }
+    std::string demangledFnName(demangledNamePtr);
+    // Add the information about the mapping for a specific function.
+    // Remember the mapping between the function name and its mangled name.
+    if (!llvmFunctionNameToMangledName_.count(demangledFnName)) {
+      llvmFunctionNameToMangledName_.insert({demangledFnName, {}});
+    }
+    llvmFunctionNameToMangledName_[demangledFnName].push_back(mangledName);
+  }
+  // Free up the memory.
+  if (fnNameBuf) {
+    free(fnNameBuf);
+  }
+  DEBUG_GLOW({
+    // Dump the map for debugging purposes.
+    llvm::dbgs() << "Mapping between function names and matching LLVM function "
+                    "names in the module:\n";
+    for (auto &kv : llvmFunctionNameToMangledName_) {
+      auto &nonMangledName = kv.first;
+      auto &mangledNames = kv.second;
+      llvm::dbgs() << nonMangledName << " -> ";
+      for (auto &mangledName : mangledNames) {
+        llvm::dbgs() << mangledName << "; ";
+      }
+      llvm::dbgs() << "\n";
+    }
+    llvm::dbgs() << "\n";
+    llvm::dbgs().flush();
+  });
+}
+
+llvm::Function *LLVMIRGen::getFunctionByName(const std::string &name) {
+  // Initialize if this is the first time getFunctionByName is invoked.
+  if (llvmFunctionNameToMangledName_.empty()) {
+    initLLVMFunctionNameToMangledNameMap();
+  }
+  auto lookupFunctionByName = [&]() -> llvm::Function * {
+    auto it = llvmFunctionNameToMangledName_.find(name);
+    if (it != llvmFunctionNameToMangledName_.end()) {
+      // Check if there is a conflict as there are multiple functions with the
+      // same name. This is likely due to having multiple C++ functions with the
+      // same name, but different types of arguments.
+      auto &mangledNames = it->second;
+      if (mangledNames.size() > 1) {
+        LOG(INFO) << "Multiple functions matching name: " << name << "\n";
+        for (auto &mangledName : mangledNames) {
+          LOG(INFO) << "\t" << mangledName << "\n";
+        }
+      }
+      CHECK_EQ(mangledNames.size(), 1)
+          << "Expected only one matching function for " << name;
+      auto fullName = mangledNames.front();
+      auto *F = getModule().getFunction(fullName);
+      if (!F) {
+        // TODO: Remove the function name from the map.
+      }
+      return F;
+    }
+    // No match found.
+    auto *F = getModule().getFunction(name);
+    if (F) {
+      // Update the map with the new function.
+      if (!llvmFunctionNameToMangledName_.count(name)) {
+        llvmFunctionNameToMangledName_.insert({name, {}});
+      }
+      llvmFunctionNameToMangledName_[name].push_back(name);
+    }
+    return F;
+  };
+  // Check if the full function name is known already.
+  auto *F = lookupFunctionByName();
+  return F;
+}
+
 llvm::Function *
 LLVMIRGen::getFunction(const std::string &name,
                        llvm::ArrayRef<glow::ElemKind> elemTyArray) {
-  auto strName = "libjit_" + name;
+  auto strName = name;
 
   for (auto elTy : elemTyArray) {
     strName = createName(strName, elTy);
   }
-  auto *F = llmodule_->getFunction(strName);
-  CHECK(F) << "Unable to load the function: " << strName.c_str();
-  return F;
+  return getFunction(strName);
 }
 
 llvm::Function *LLVMIRGen::getFunction(const std::string &name) {
-  return getFunction(name, llvm::ArrayRef<ElemKind>{});
+  auto *F = getFunctionByName("libjit_" + name);
+  CHECK(F) << "Unable to load the function: " << name;
+  return F;
 }
 
 llvm::Function *LLVMIRGen::getFunction(const std::string &name,
@@ -2059,6 +2179,10 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
           biasTy->getScale() / matMulScale, 0);
       auto outScaleParam = quantization::quantizeScaleOffset32To8(
           matMulScale / destTy->getScale(), 0);
+#ifdef GLOW_WITH_CMSIS
+      auto cmsisOutScaleParam = quantization::CMSIS_quantizeScaleOffset32To8(
+	  matMulScale / destTy->getScale(), destTy->getOffset());
+#endif
 
       // Pass the pre-shift, post-shift and integer scale parameters for the
       // bias and output calculation.
@@ -2068,6 +2192,10 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
       auto *outPre = emitConstI32(builder, outScaleParam.pre);
       auto *outPost = emitConstI32(builder, outScaleParam.post);
       auto *outScale = emitConstI32(builder, outScaleParam.scale);
+#ifdef GLOW_WITH_CMSIS
+      auto *cmsisOutScale = emitConstI32(builder, cmsisOutScaleParam.cmsis_scale);
+      auto *cmsisOutOffset = emitConstI32(builder, cmsisOutScaleParam.cmsis_offset);
+#endif
 
       auto *F =
           getFunction("fc", {dest->getElementType(), bias->getElementType()});
@@ -2075,7 +2203,11 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
                  {destPtr, srcPtr, weightsPtr, biasPtr, destDims, srcDims,
                   weightsDims, biasDims, destOffset, srcOffset, weightsOffset,
                   biasOffset, biasPre, biasPost, biasScale, outPre, outPost,
-                  outScale});
+#ifndef GLOW_WITH_CMSIS
+                  outScale, 0, 0});
+#else
+		  outScale, cmsisOutScale, cmsisOutOffset});
+#endif
     } else {
       auto *F = getFunction("fc", dest->getElementType());
       createCall(builder, F,
@@ -2586,6 +2718,11 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
     std::vector<llvm::Constant *> outputPreV(channelNum);
     std::vector<llvm::Constant *> outputPostV(channelNum);
     std::vector<llvm::Constant *> outputScaleV(channelNum);
+
+#ifdef GLOW_WITH_CMSIS
+    std::vector<llvm::Constant *> cmsisScaleV(channelNum);
+    std::vector<llvm::Constant *> cmsisOffsetV(channelNum);
+#endif
     for (size_t i = 0; i < channelNum; i++) {
 
       // Compute the scaling parameters for bias and output.
@@ -2594,6 +2731,10 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
           biasScalesH.raw(i) / matMulScale, 0);
       auto outScaleParam = quantization::quantizeScaleOffset32To8(
           matMulScale / destTy->getScale(), 0);
+#ifdef GLOW_WITH_CMSIS
+      auto cmsisOutScaleParam = quantization::CMSIS_quantizeScaleOffset32To8(
+         matMulScale / destTy->getScale(), destTy->getOffset());
+#endif
 
       // Pass the pre-shift, post-shift and integer scale parameters for the
       // bias and output calculation.
@@ -2609,6 +2750,12 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
                                               outScaleParam.post, true);
       outputScaleV[i] = llvm::ConstantInt::get(builder.getInt32Ty(),
                                                outScaleParam.scale, true);
+#ifdef GLOW_WITH_CMSIS
+      cmsisScaleV[i] = llvm::ConstantInt::get(builder.getInt32Ty(),
+		      			      cmsisOutScaleParam.cmsis_scale, true);
+      cmsisOffsetV[i] = llvm::ConstantInt::get(builder.getInt32Ty(),
+		      			      cmsisOutScaleParam.cmsis_offset, true);
+#endif
     }
 
     auto *destPtr = emitValueAddress(builder, dest);
@@ -2644,6 +2791,13 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
     auto *outputScalePtr =
         emitConstArray(builder, outputScaleV, builder.getInt32Ty());
 
+#ifdef GLOW_WITH_CMSIS
+    auto *cmsisScalePtr =
+	emitConstArray(builder, cmsisScaleV, builder.getInt32Ty());
+    auto *cmsisOffsetPtr =
+	emitConstArray(builder, cmsisOffsetV, builder.getInt32Ty());
+#endif
+
     bool isConv3D = (srcTy->dims().size() == 5);
     auto *F = getFunction(isConv3D ? "channelwise_quantized_conv3d"
                                    : "channelwise_quantized_conv2d",
@@ -2659,7 +2813,11 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
                 dilation,       destOffset,    srcOffset,      filterOffsetsPtr,
                 biasOffsetsPtr, biasPrePtr,    biasPostPtr,    biasScalePtr,
                 outputPrePtr,   outputPostPtr, outputScalePtr, actType,
-                actArgsQuant});
+#ifndef GLOW_WITH_CMSIS
+                actArgsQuant, 0, 0});
+#else
+    		actArgsQuant, cmsisScalePtr, cmsisOffsetPtr});
+#endif
     break;
   }
 
@@ -4158,4 +4316,17 @@ std::string LLVMIRGen::getBundleHeaderExtra() const {
     headerExtra += std::string(tfliteCustomOperatorApi);
   }
   return headerExtra;
+}
+
+void LLVMIRGen::dump(llvm::raw_ostream &out) const {
+  llmodule_->print(out, nullptr);
+}
+
+void LLVMIRGen::dump() const { dump(llvm::outs()); }
+
+std::string LLVMIRGen::toString() const {
+  std::string str;
+  llvm::raw_string_ostream out(str);
+  dump(out);
+  return str;
 }

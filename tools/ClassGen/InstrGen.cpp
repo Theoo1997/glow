@@ -582,6 +582,46 @@ int main(int argc, char **argv) {
                   {"Lengths", "ElemKind::Int32ITy"})
       .autoIRGen();
 
+  BB.newInstr("BinaryCrossEntropyWithLogits")
+      .addOperand("Dest", OperandKind::Out)
+      .addOperand("Input", OperandKind::In)
+      .addOperand("Target", OperandKind::In)
+      .addOperand("Weight", OperandKind::In)
+      .addOperand("PosWeight", OperandKind::In)
+      .addMember(MemberType::Unsigned, "Reduction")
+      .autoVerify(VerifyKind::SameShape, {"Input", "Target"})
+      .dataParallel()
+      .autoIRGen();
+
+  BB.newInstr("WeightBinaryCrossEntropyWithLogits")
+      .addOperand("Dest", OperandKind::Out)
+      .addOperand("Input", OperandKind::In)
+      .addOperand("Target", OperandKind::In)
+      .addOperand("Weight", OperandKind::In)
+      .addMember(MemberType::Unsigned, "Reduction")
+      .autoVerify(VerifyKind::SameShape, {"Input", "Target"})
+      .dataParallel()
+      .autoIRGen();
+
+  BB.newInstr("PosWeightBinaryCrossEntropyWithLogits")
+      .addOperand("Dest", OperandKind::Out)
+      .addOperand("Input", OperandKind::In)
+      .addOperand("Target", OperandKind::In)
+      .addOperand("PosWeight", OperandKind::In)
+      .addMember(MemberType::Unsigned, "Reduction")
+      .autoVerify(VerifyKind::SameShape, {"Input", "Target"})
+      .dataParallel()
+      .autoIRGen();
+
+  BB.newInstr("SimpleBinaryCrossEntropyWithLogits")
+      .addOperand("Dest", OperandKind::Out)
+      .addOperand("Input", OperandKind::In)
+      .addOperand("Target", OperandKind::In)
+      .addMember(MemberType::Unsigned, "Reduction")
+      .autoVerify(VerifyKind::SameShape, {"Input", "Target"})
+      .dataParallel()
+      .autoIRGen();
+
   /// Adds the 'Slice' operand to each one of the slices in the batch.
   BB.newInstr("BatchedAdd")
       .addOperand("Dest", OperandKind::Out)
@@ -609,6 +649,15 @@ int main(int argc, char **argv) {
       .autoVerify(VerifyKind::SameShape, {"Dest", "LHS", "RHS"})
       .autoIRGen("Sub");
 
+  BB.newInstr("ElementRsubConst")
+      .addOperand("Dest", OperandKind::Out)
+      .addOperand("RHS", OperandKind::In)
+      .addMember(MemberType::Float, "LHS")
+      .inplaceOperand({"Dest", "RHS"})
+      .dataParallel()
+      .autoVerify(VerifyKind::SameShape, {"Dest", "RHS"})
+      .autoIRGen("RsubConst");
+
   BB.newInstr("ElementMul")
       .addOperand("Dest", OperandKind::Out)
       .addOperand("LHS", OperandKind::In)
@@ -617,6 +666,15 @@ int main(int argc, char **argv) {
       .dataParallel()
       .autoVerify(VerifyKind::SameShape, {"Dest", "LHS", "RHS"})
       .autoIRGen("Mul");
+
+  BB.newInstr("ElementMulConst")
+      .addOperand("Dest", OperandKind::Out)
+      .addOperand("RHS", OperandKind::In)
+      .addMember(MemberType::Float, "LHS")
+      .inplaceOperand({"Dest", "RHS"})
+      .dataParallel()
+      .autoVerify(VerifyKind::SameShape, {"Dest", "RHS"})
+      .autoIRGen("MulConst");
 
   BB.newInstr("ElementDiv")
       .addOperand("Dest", OperandKind::Out)
@@ -1075,6 +1133,44 @@ int main(int argc, char **argv) {
       .autoVerify(VerifyKind::SameElementType,
                   {"PermuteList", "ElemKind::Int64ITy"});
 
+  BB.newInstr("IndexAdd")
+      .addOperand("Dest", OperandKind::Out)
+      .addOperand("Input", OperandKind::In)
+      .addOperand("Index", OperandKind::In)
+      .addOperand("Source", OperandKind::In)
+      .addMember(MemberType::Int64, "Dim")
+      .addMember(MemberType::Float, "Alpha")
+      .autoIRGen()
+      .autoVerify(VerifyKind::SameShape, {"Dest", "Input"});
+
+  BB.newInstr("Mean")
+      .addOperand("Dest", OperandKind::Out)
+      .addOperand("Src", OperandKind::In)
+      .addMember(MemberType::VectorUnsigned, "MeanDims")
+      .autoVerify(VerifyKind::SameElementType, {"Dest", "Src"});
+
+  BB.newInstr("PrunedArrayLookup")
+      .addOperand("Dest", OperandKind::Out)
+      .addOperand("Indices", OperandKind::In)
+      .addOperand("Offsets", OperandKind::In)
+      .addOperand("IndexRemapping", OperandKind::In)
+      .addOperand("IndexRemappingOffsets", OperandKind::In)
+      .autoVerify(VerifyKind::SameElementType,
+                  {"Indices", "ElemKind::Int32ITy"})
+      .autoVerify(VerifyKind::SameElementType,
+                  {"Offsets", "ElemKind::Int32ITy"})
+      .autoVerify(VerifyKind::SameElementType,
+                  {"IndexRemapping", "ElemKind::Int32ITy"})
+      .autoVerify(VerifyKind::SameElementType,
+                  {"IndexRemappingOffsets", "ElemKind::Int64ITy"});
+  BB.newInstr("IndexPut")
+      .addOperand("Dest", OperandKind::Out)
+      .addOperand("Input", OperandKind::In)
+      .addOperand("Values", OperandKind::In)
+      .addMember(MemberType::Boolean, "Accumulate")
+      .addMember(MemberType::Int64, "NumIndices")
+      .inplaceOperand({"Dest", "Input"})
+      .autoVerify(VerifyKind::NoVerify);
   //===--------------------------------------------------------------------===//
   //                Fillers
   //===--------------------------------------------------------------------===//
@@ -1123,6 +1219,20 @@ int main(int argc, char **argv) {
       .autoVerify(VerifyKind::SameElementType, {"Dest", "Src"})
       .autoIRGen();
 
+  BB.newInstr("NanToNum")
+      .addOperand("Dest", OperandKind::Out)
+      .addOperand("Src", OperandKind::In)
+      .addMember(MemberType::Float, "Nan")
+      .addMember(MemberType::Float, "PosInf")
+      .addMember(MemberType::Float, "NegInf")
+      .inplaceOperand({
+          "Dest",
+          "Src",
+      })
+      .dataParallel()
+      .autoVerify(VerifyKind::SameShape, {"Dest", "Src"})
+      .autoVerify(VerifyKind::SameElementType, {"Dest", "Src"});
+
   BB.newInstr("Sigmoid")
       .addOperand("Dest", OperandKind::Out)
       .addOperand("Src", OperandKind::In)
@@ -1132,7 +1242,8 @@ int main(int argc, char **argv) {
       })
       .dataParallel()
       .autoVerify(VerifyKind::SameType, {"Dest", "Src"})
-      .autoIRGen();
+      .autoIRGen()
+      .addGradientInstr({"Dest"}, {"Dest", "Src"});
 
   BB.newInstr("Tanh")
       .addOperand("Dest", OperandKind::Out)
@@ -1143,7 +1254,8 @@ int main(int argc, char **argv) {
       })
       .dataParallel()
       .autoVerify(VerifyKind::SameType, {"Dest", "Src"})
-      .autoIRGen();
+      .autoIRGen()
+      .addGradientInstr({"Dest"}, {"Dest", "Src"});
 
   BB.newInstr("LeakyRelu")
       .addOperand("Dest", OperandKind::Out)
@@ -1313,6 +1425,13 @@ int main(int argc, char **argv) {
       .autoVerify(VerifyKind::SameElementType, {"Values", "LabelValues"})
       .autoIRGen();
 
+  BB.newInstr("Pad")
+      .addOperand("Dest", OperandKind::Out)
+      .addOperand("Src", OperandKind::In)
+      .addMember(MemberType::VectorUnsigned, "Pad")
+      .addMember(MemberType::Unsigned, "PaddingMode")
+      .addMember(MemberType::Float, "Value")
+      .autoVerify(VerifyKind::SameElementType, {"Dest", "Src"});
   //===--------------------------------------------------------------------===//
   //                Reorder transformations
   //===--------------------------------------------------------------------===//
@@ -1532,6 +1651,11 @@ int main(int argc, char **argv) {
       .addMember(MemberType::String, "OperatorOptions")
       .autoVerify(VerifyKind::NoVerify);
 
+  /// Input(s) will be added in backend specific function
+  /// (Backend::generateInst())
+  BB.newInstr("SumWithZeroPadding")
+      .addOperand("Dest", OperandKind::Out)
+      .autoVerify(VerifyKind::NoVerify);
   //===--------------------------------------------------------------------===//
   //                Region of Interest (ROI)
   //===--------------------------------------------------------------------===//

@@ -5289,6 +5289,7 @@ bool OptimizeQuantization::run(Function *F, const CompilationContext &cctx) {
       case Kinded::Kind::RescaleQuantizedNodeKind:
       case Kinded::Kind::QuantizeNodeKind:
         addNewNodeToWorklist = true;
+        [[fallthrough]];
       case Kinded::Kind::SplatNodeKind:
       case Kinded::Kind::AddNodeKind:
       case Kinded::Kind::SubNodeKind:

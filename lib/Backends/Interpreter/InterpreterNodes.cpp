@@ -2227,6 +2227,27 @@ void BoundInterpreterFunction::fwdSigmoidInst(const SigmoidInst *I) {
                             I->getSrc()->getElementType(), I);
 }
 
+void BoundInterpreterFunction::fwdSigmoidGradInst(const SigmoidGradInst *) {
+  llvm_unreachable("SigmoidGrad instruction is not supported yet");
+}
+
+void BoundInterpreterFunction::fwdTanhGradInst(const TanhGradInst *) {
+  llvm_unreachable("TanhGrad instruction is not supported yet");
+}
+
+void BoundInterpreterFunction::fwdNanToNumInst(const NanToNumInst *) {
+  llvm_unreachable("NanToNum instruction is not supported yet");
+}
+
+void BoundInterpreterFunction::fwdPadInst(const PadInst *) {
+  llvm_unreachable("Pad instruction is not supported yet");
+}
+
+void BoundInterpreterFunction::fwdPrunedArrayLookupInst(
+    const PrunedArrayLookupInst *) {
+  llvm_unreachable("PrunedArrayLookup instruction is not supported yet");
+}
+
 template <typename ElemTy>
 void BoundInterpreterFunction::fwdTanhInstFloatImpl(const TanhInst *I) {
   staticAssertFloatingPointType(ElemTy);
@@ -2373,6 +2394,34 @@ void BoundInterpreterFunction::fwdCrossEntropyLossInstFloatImpl(
   }
 }
 
+void BoundInterpreterFunction::fwdBinaryCrossEntropyWithLogitsInst(
+    const BinaryCrossEntropyWithLogitsInst * /*unused*/) {
+  llvm_unreachable(
+      "BinaryCrossEntropyWithLogitsInst instruction not supported on "
+      "Inrerpretter backend\n");
+}
+
+void BoundInterpreterFunction::fwdWeightBinaryCrossEntropyWithLogitsInst(
+    const WeightBinaryCrossEntropyWithLogitsInst * /*unused*/) {
+  llvm_unreachable(
+      "BinaryCrossEntropyWithLogitsInst instruction not supported on "
+      "Inrerpretter backend\n");
+}
+
+void BoundInterpreterFunction::fwdPosWeightBinaryCrossEntropyWithLogitsInst(
+    const PosWeightBinaryCrossEntropyWithLogitsInst * /*unused*/) {
+  llvm_unreachable(
+      "BinaryCrossEntropyWithLogitsInst instruction not supported on "
+      "Inrerpretter backend\n");
+}
+
+void BoundInterpreterFunction::fwdSimpleBinaryCrossEntropyWithLogitsInst(
+    const SimpleBinaryCrossEntropyWithLogitsInst * /*unused*/) {
+  llvm_unreachable(
+      "BinaryCrossEntropyWithLogitsInst instruction not supported on "
+      "Inrerpretter backend\n");
+}
+
 void BoundInterpreterFunction::fwdCrossEntropyLossInst(
     const CrossEntropyLossInst *I) {
   dispatchFloatingPointImpl(fwdCrossEntropyLossInstFloatImpl,
@@ -2480,6 +2529,10 @@ void BoundInterpreterFunction::fwdSplatInst(const glow::SplatInst *I) {
 
 void BoundInterpreterFunction::fwdTouchInst(const glow::TouchInst *) {
   // Do nothing for a TouchInst
+}
+
+void BoundInterpreterFunction::fwdIndexPutInst(const IndexPutInst *) {
+  llvm_unreachable("IndexPut instruction is not supported yet");
 }
 
 void BoundInterpreterFunction::fwdInsertTensorInst(
@@ -3438,6 +3491,18 @@ void BoundInterpreterFunction::fwdElementSubInst(const ElementSubInst *I) {
 
   dispatchArithmeticImpl(fwdElementSubInstArithmeticImpl,
                          I->getDest()->getElementType(), I);
+}
+
+void BoundInterpreterFunction::fwdElementRsubConstInst(
+    const ElementRsubConstInst * /*unused*/) {
+  llvm_unreachable(
+      "RsubConstInst instruction not supported on Inrerpretter backend\n");
+}
+
+void BoundInterpreterFunction::fwdElementMulConstInst(
+    const ElementMulConstInst * /*unused*/) {
+  llvm_unreachable(
+      "MulConstInst instruction not supported on Inrerpretter backend\n");
 }
 
 template <typename ElemTy>
@@ -6708,6 +6773,21 @@ void BoundInterpreterFunction::fwdPermutedPooledEmbeddingsInstImpl(
   }
 }
 
+void BoundInterpreterFunction::fwdIndexAddInst(glow::IndexAddInst const *I) {
+  dispatchFloatingPointAndIndexImpl(fwdIndexAddInstImpl,
+                                    I->getInput()->getElementType(),
+                                    I->getIndex()->getElementType(), I);
+}
+
+template <typename ElemTy, typename IndexTy>
+void BoundInterpreterFunction::fwdIndexAddInstImpl(glow::IndexAddInst const *) {
+  llvm_unreachable("not yet implemented");
+}
+
+void BoundInterpreterFunction::fwdMeanInst(glow::MeanInst const *) {
+  llvm_unreachable("Mean instruction is not supported yet");
+}
+
 #define DISPATCH_ARG_MIN_MAX(functionName, elemTy, elemTyIndex, ...)           \
   switch (elemTy) {                                                            \
   case ElemKind::FloatTy:                                                      \
@@ -8621,4 +8701,10 @@ void BoundInterpreterFunction::fwdBBoxTransformInst(
 void BoundInterpreterFunction::fwdExternalFunctionCallInst(
     glow::ExternalFunctionCallInst const *) {
   LOG(FATAL) << "ExternalFunctionCallInst is not supported yet";
+}
+
+void BoundInterpreterFunction::fwdSumWithZeroPaddingInst(
+    const SumWithZeroPaddingInst *) {
+
+  llvm_unreachable("SumWithZeroPadding instruction is not supported yet");
 }

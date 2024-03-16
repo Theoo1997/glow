@@ -13,7 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#include <stdio.h>
+
 #include "libjit_defs.h"
+
+/* Re-definition warnings */
+#undef MIN
+#undef MAX
+
+#include "../CMSIS-NN/Include/arm_nnfunctions.h"
+#include "../CMSIS-NN/Include/arm_nn_math_types.h"
+#include "../CMSIS-NN/Include/arm_nnsupportfunctions.h"
 
 namespace {
 
@@ -399,11 +410,45 @@ void libjit_fc_i8_i32(int8_t *outW, const int8_t *inW, const int8_t *weightsW,
                       int32_t inOffset, int32_t weightsOffset,
                       int32_t biasOffset, int32_t biasPre, int32_t biasPost,
                       int32_t biasScale, int32_t outPre, int32_t outPost,
-                      int32_t outScale) {
+                      int32_t outScale, int32_t cmsisOutScale, int32_t cmsisOutOffset) {
+#ifndef GLOW_WITH_CMSIS
   libjit_fc_generic<int8_t, int32_t>(
       outW, inW, weightsW, biasW, outWdims, inWdims, weightsWdims, biasWdims,
       outOffset, inOffset, weightsOffset, biasOffset, biasPre, biasPost,
       biasScale, outPre, outPost, outScale);
+#else
+  cmsis_nn_context context = {NULL, 0};
+  cmsis_nn_activation activation = {-128, 127};
+  cmsis_nn_fc_params fc_params = {inOffset, weightsOffset, outOffset, activation};
+  cmsis_nn_per_tensor_quant_params quant_params = {cmsisOutScale, cmsisOutOffset};
+  cmsis_nn_dims input_dims = {(int32_t) inWdims[0], 1, 1, (int32_t) inWdims[1]};
+  cmsis_nn_dims filter_dims = {(int32_t) weightsWdims[0], 1, 1, (int32_t) weightsWdims[1]};
+  cmsis_nn_dims bias_dims = {1, 1, 1, (int32_t) weightsWdims[1]};
+  cmsis_nn_dims output_dims = {(int32_t) inWdims[0], 1, 1, (int32_t) weightsWdims[1]};
+
+  /* Reorder weightsW
+   * Glow load filter weights in a different layout (weightWdims[1] x inWdims[1]) when compared
+   * with CMSIS-nn (inWdims[1] x weightWdims). Reorder is mandatory.
+   */
+  int8_t *weightsW_temp = NULL;
+  libjit_aligned_malloc((void **) &weightsW_temp, 8, weightsWdims[1] * inWdims[1]);
+  for (int i = 0; i < weightsWdims[1]; ++i) {
+      for (int j = 0; j < inWdims[1]; ++j) {
+	  weightsW_temp[i * inWdims[1] + j] = weightsW[j * weightsWdims[1] + i];
+      }
+  }
+
+  arm_cmsis_nn_status status;
+  status = arm_fully_connected_s8(&context, &fc_params, &quant_params,
+	  &input_dims, inW, &filter_dims, weightsW_temp, &bias_dims,
+	  biasW, &output_dims, outW);
+
+  if (status != ARM_CMSIS_NN_SUCCESS) {
+      fprintf(stderr, "CMSIS arm_fully_connected_s8 failure\n");
+  }
+
+  libjit_aligned_free(weightsW_temp);
+#endif
 }
 
 /// FullyConnected with int8 precision and int8 bias.
@@ -414,7 +459,7 @@ void libjit_fc_i8_i8(int8_t *outW, const int8_t *inW, const int8_t *weightsW,
                      int32_t inOffset, int32_t weightsOffset,
                      int32_t biasOffset, int32_t biasPre, int32_t biasPost,
                      int32_t biasScale, int32_t outPre, int32_t outPost,
-                     int32_t outScale) {
+                     int32_t outScale, int32_t cmsisOutScale, int32_t cmsisOutOffset) {
   libjit_fc_generic<int8_t, int8_t>(
       outW, inW, weightsW, biasW, outWdims, inWdims, weightsWdims, biasWdims,
       outOffset, inOffset, weightsOffset, biasOffset, biasPre, biasPost,

@@ -2460,6 +2460,10 @@ DEF_ALL_WRITER_NODE(SparseLengthsSum)
 DEF_ALL_WRITER_NODE(SparseLengthsWeightedSum)
 DEF_ALL_WRITER_NODE(EmbeddingBag)
 DEF_ALL_WRITER_NODE(Embedding)
+DEF_ALL_WRITER_NODE(BinaryCrossEntropyWithLogits)
+DEF_ALL_WRITER_NODE(WeightBinaryCrossEntropyWithLogits)
+DEF_ALL_WRITER_NODE(PosWeightBinaryCrossEntropyWithLogits)
+DEF_ALL_WRITER_NODE(SimpleBinaryCrossEntropyWithLogits)
 DEF_ALL_WRITER_NODE(ThresholdGrad)
 DEF_ALL_WRITER_NODE(BitwiseNot)
 DEF_ALL_WRITER_NODE(GaussianFill)
@@ -2488,6 +2492,7 @@ DEF_ALL_WRITER_NODE(BatchedUnaryEmbeddingsBags)
 DEF_ALL_WRITER_NODE(IntNBitSplitEmbeddingBags)
 DEF_ALL_WRITER_NODE(IntNBitSplitEmbeddingWeightedBags)
 DEF_ALL_WRITER_NODE(PermutePooledEmbeddings)
+DEF_ALL_WRITER_NODE(IndexAdd)
 
 Error ONNXModelWriter::writeClip(const ClipNode *node, GraphType &graph) {
   auto *proto = graph.add_node();
@@ -2762,6 +2767,9 @@ DEF_UNSUPPORTED_NODE(SigmoidCrossEntropyWithLogits)
 DEF_UNSUPPORTED_NODE(LocalResponseNormalizationGrad)
 DEF_UNSUPPORTED_NODE(AdaptiveAvgPoolGrad)
 DEF_UNSUPPORTED_NODE(BatchedPairwiseDotProductGrad)
+// Custom nodes.
+DEF_UNSUPPORTED_NODE(RsubConst)
+DEF_UNSUPPORTED_NODE(MulConst)
 
 // Include backend-specific ONNX model writers.
 #include "glow/ONNXModelWriterIncludes.h"

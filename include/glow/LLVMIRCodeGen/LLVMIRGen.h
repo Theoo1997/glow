@@ -168,6 +168,10 @@ protected:
   DebugInfo dbgInfo_;
   /// Debug info builder.
   std::unique_ptr<llvm::DIBuilder> DIBuilder_;
+  /// Map from non-mangled function names to the list of mangled names of the
+  /// functions in the LLVM module that match the name represented by the key.
+  std::unordered_map<std::string, std::vector<std::string>>
+      llvmFunctionNameToMangledName_;
 
   /// A set that contains all of the argument that we request from the
   /// specializer not to specialize.
@@ -210,6 +214,8 @@ protected:
                                      const glow::Value *val);
   /// Generates LLVM IR that materializes the constant \p val.
   llvm::Value *emitConstF32(llvm::IRBuilder<> &builder, float val);
+  /// Generates LLVM IR that materializes the constant int64 \p val.
+  llvm::Value *emitConstI64(llvm::IRBuilder<> &builder, int64_t val);
   /// Generates LLVM IR that materializes the constant \p val.
   llvm::Value *emitConstI32(llvm::IRBuilder<> &builder, int32_t val);
   /// Generates LLVM IR that materializes the constant \p val.
@@ -338,6 +344,10 @@ protected:
   /// \returns the backing tensor associated to the IR constant value \p value.
   Tensor getTensorForConstantValue(Value *value);
 
+  /// Initialize a map from function names to mangled names of LLVM functions in
+  /// the module matching it.
+  void initLLVMFunctionNameToMangledNameMap();
+
 public:
   /// Destructor
   virtual ~LLVMIRGen() {}
@@ -399,6 +409,12 @@ public:
   virtual llvm::CallInst *
   createUncheckedCall(llvm::IRBuilder<> &builder, llvm::Function *callee,
                       llvm::ArrayRef<llvm::Value *> args);
+  /// \returns an LLVM function by \p name. \p is just a regular human readable
+  /// function name. This helper can be used to lookup llvm::Function objects
+  /// corresponding to C++ functions with mangled names as long as there is only
+  /// one such C++ function, whose name matches the provided \p name. If there
+  /// are multiple such functions, it results in an error message.
+  virtual llvm::Function *getFunctionByName(const std::string &name);
   /// \returns a libjit API function by name.
   virtual llvm::Function *getFunction(const std::string &name);
   /// \returns a libjit API function by name and tensor element type.
@@ -438,6 +454,15 @@ public:
   std::string getMainEntryName() const;
   /// Set the name of the main entry point (name is automatically legalized).
   void setMainEntryName(std::string name);
+  /// \returns true if lazy loading of LLVM modules is enabled.
+  virtual bool shouldUseLLVMModuleLazyLoading() { return false; }
+  /// Search for the standard library bitcode file \p filename on disk or use
+  /// provided \p libjitBC bitcode and load it into an LLVM module. We search
+  /// for the standard library around the current executable and also in the
+  /// current directory.
+  virtual std::unique_ptr<llvm::Module>
+  loadStandardLibrary(llvm::LLVMContext *ctx, llvm::StringRef filename,
+                      llvm::StringRef libjitBC);
   /// Creates an LLVM module, the entry function, etc.
   virtual void initCodeGen();
   /// Emits the code of the entry function, performs optimizations, etc.
@@ -507,6 +532,9 @@ public:
   /// Update inline attributes of functions in the module \p M using a
   /// backend-specific logic.
   virtual void updateInlineAttributes(llvm::Module *M);
+  /// Update attributes of functions in the module \p M in a backend-specific
+  /// way.
+  virtual void updateAttributes(llvm::Module *M);
   /// \returns true if an instruction \p I can be part of a data parallel
   /// kernel. This gives backends a possibility to provide a custom logic to
   /// decide on a per-instruction basis what can be part of data parallel
@@ -528,6 +556,12 @@ public:
   /// Add a bundle object \p objectName to be archived to the bundle. The object
   /// must be registered in the \ref objectRegistry_ otherwise error is thrown.
   virtual void addBundleObject(llvm::StringRef objectName);
+  // Dump the LLVM IR module to the given stream.
+  void dump(llvm::raw_ostream &out) const;
+  // Dump the LLVM IR module to a stdout.
+  void dump() const;
+  // Return the output of the LLVM IR module as a string.
+  std::string toString() const;
 };
 
 template <typename T>

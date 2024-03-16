@@ -424,6 +424,13 @@ int main(int argc, char **argv) {
       .addGradient()
       .setDocstring("Performs Mul on the LHS and RHS operands.");
 
+  BB.newNode("MulConst")
+      .addInput("RHS")
+      .addMember(MemberType::Float, "LHS")
+      .addResultFromCtorArg()
+      .dataParallel()
+      .setDocstring("Performs Mul on the RHS and const LHS operands.");
+
   BB.newNode("Sub")
       .addInput("LHS")
       .addInput("RHS")
@@ -431,6 +438,13 @@ int main(int argc, char **argv) {
       .dataParallel()
       .addGradient()
       .setDocstring("Performs Sub on the LHS and RHS operands.");
+
+  BB.newNode("RsubConst")
+      .addInput("RHS")
+      .addMember(MemberType::Float, "LHS")
+      .addResultFromCtorArg()
+      .dataParallel()
+      .setDocstring("Performs reverse Sub on the const LHS and RHS operands.");
 
   BB.newNode("Div")
       .addInput("LHS")
@@ -866,6 +880,38 @@ int main(int argc, char **argv) {
       .addResultFromCtorArg()
       .setDocstring("Threshold backward Node ");
 
+  BB.newNode("BinaryCrossEntropyWithLogits")
+      .addInput("Input")
+      .addInput("Target")
+      .addInput("Weight")
+      .addInput("PosWeight")
+      .addMember(MemberType::Unsigned, "Reduction")
+      .addResultFromCtorArg()
+      .setDocstring("Binary cross entroy with logits node.");
+
+  BB.newNode("WeightBinaryCrossEntropyWithLogits")
+      .addInput("Input")
+      .addInput("Target")
+      .addInput("Weight")
+      .addMember(MemberType::Unsigned, "Reduction")
+      .addResultFromCtorArg()
+      .setDocstring("Binary cross entroy with logits node.");
+
+  BB.newNode("PosWeightBinaryCrossEntropyWithLogits")
+      .addInput("Input")
+      .addInput("Target")
+      .addInput("PosWeight")
+      .addMember(MemberType::Unsigned, "Reduction")
+      .addResultFromCtorArg()
+      .setDocstring("Binary cross entroy with logits node.");
+
+  BB.newNode("SimpleBinaryCrossEntropyWithLogits")
+      .addInput("Input")
+      .addInput("Target")
+      .addMember(MemberType::Unsigned, "Reduction")
+      .addResultFromCtorArg()
+      .setDocstring("Binary cross entroy with logits node.");
+
   BB.newNode("EmbeddingBag")
       .addInput("Data")
       .addInput("Weights")
@@ -1112,6 +1158,17 @@ int main(int argc, char **argv) {
       .addInput("InvPermuteList")
       .addResultFromCtorArg()
       .setDocstring("Permute pooled embeddings");
+
+  BB.newNode("IndexAdd")
+      .addInput("Input")
+      .addInput("Index")
+      .addInput("Source")
+      .addMember(MemberType::Int64, "Dim")
+      .addMember(MemberType::Float, "Alpha")
+      .addResultFromCtorArg()
+      .setDocstring("IndexAdd accumulates the elements of alpha times source "
+                    "into the input tensor by adding to the indices in the   "
+                    "order given in index.");
 
   //===--------------------------------------------------------------------===//
   //                Fillers

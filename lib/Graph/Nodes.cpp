@@ -1200,6 +1200,14 @@ bool LogSoftMaxNode::verify() const {
   return verifyLogSoftMax(getInput(), getResult());
 }
 
+bool BinaryCrossEntropyWithLogitsNode::verify() const { return true; }
+
+bool WeightBinaryCrossEntropyWithLogitsNode::verify() const { return true; }
+
+bool PosWeightBinaryCrossEntropyWithLogitsNode::verify() const { return true; }
+
+bool SimpleBinaryCrossEntropyWithLogitsNode::verify() const { return true; }
+
 bool LogSoftMaxGradNode::verify() const {
   bool isValid = verifyInputAndGradInputTypes(getInput(),
                                               getGradOfInputNamedInput(), this);
@@ -1559,6 +1567,14 @@ VERIFY_ARITHMETIC(Max);
 VERIFY_ARITHMETIC(Min);
 VERIFY_ARITHMETIC(Pow);
 #undef VERIFY_ARITHMETIC
+
+bool RsubConstNode::verify() const {
+  return checkSameShape(getRHS(), getResult(), this);
+}
+
+bool MulConstNode::verify() const {
+  return checkSameShape(getRHS(), getResult(), this);
+}
 
 #define VERIFY_ARITHMETIC(NODE_NAME_)                                          \
   bool NODE_NAME_##Node::verify() const {                                      \
@@ -3134,6 +3150,26 @@ bool PermutePooledEmbeddingsNode::verify() const {
       getInvOffsetDimList(), getInvPermuteList());
 }
 
+bool IndexAddNode::verify() const {
+  auto input = getInput();
+  auto source = getSource();
+  auto index = getIndex();
+
+  bool isValid = checkType(
+      input, llvm::ArrayRef<ElemKind>({ElemKind::FloatTy, ElemKind::Float16Ty}),
+      this);
+
+  isValid &= checkType(
+      source,
+      llvm::ArrayRef<ElemKind>({ElemKind::FloatTy, ElemKind::Float16Ty}), this);
+
+  isValid &= checkType(
+      index, llvm::ArrayRef<ElemKind>({ElemKind::Int64ITy, ElemKind::Int32ITy}),
+      this);
+
+  return isValid;
+}
+
 //===----------------------------------------------------------------------===//
 //                     Node hashing support
 //===----------------------------------------------------------------------===//
@@ -3223,6 +3259,9 @@ llvm::raw_ostream &operator<<(llvm::raw_ostream &os, LUTOperator lutOperator) {
     break;
   case LUTOperator::LEAKY_RELU:
     os << "LEAKY_RELU";
+    break;
+  case LUTOperator::EXP:
+    os << "EXP";
     break;
   }
   return os;
