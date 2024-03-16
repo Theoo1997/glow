@@ -27,7 +27,7 @@ This branch master of Github contains Glow with CMSIS-NN support. CMSIS-NN softw
 3.	In each implemented kernel in CMSIS-NN we can see ARM_MATH_MVEI and ARM_MATH_DSP flags, defined automatically (in arm_math_types.h) depending on the CPU for which you compile and based upon compiler #defines. But generally, both are defined since your core kernels can have a vector part using MVEI extensions and a scalar part using DSP extension. This #defines hasn’t been tested yet, and in order to work further heeder files may be need.
 4.	When we use a Dense layer kernel a reorder of the weights must be accrued in order to have correct results. Glow loads filter weights in a different layout (weightsWdims[1] x inWdims[1]) than models are represented in a Neutron graph (inWdims[1] x weightsWdims[1]). This reorder is inside the Dense kernel (libjit_CMSIS.cpp line 43-49) leading to performance decrease.
 
-5.	In the case of dequantizing the output, TFLM multiplier is not the same with Glow multiplier. For example, a case of Renset I print the first scale multiplier of TFLM (1242405567) vs Glow (1242405376). We can see that this is not 100% equal leading to rang outputs. In order to fix this problem, Pre and Post implementation should be integrated into CMSIS-NN 
+5.	In the case of dequantizing the output, TFLM multiplier is not the same with Glow multiplier. For example, a case of Renset I print the first scale multiplier of TFLM (1242405567) vs Glow (1242405376). We can see that this is not 100% equal leading to wrong outputs. In order to fix this problem, Pre and Post implementation should be integrated into CMSIS-NN 
 
 
 ## Partners of Glow
